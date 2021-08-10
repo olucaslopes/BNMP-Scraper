@@ -2,6 +2,23 @@ import time
 import pandas as pd
 import requests
 
+headers = {
+    'authority': 'portalbnmp.cnj.jus.br',
+    'sec-ch-ua': '"Chromium";v="92", " Not A;Brand";v="99", "Microsoft Edge";v="92"',
+    'accept': 'application/json',
+    'fingerprint': '',
+    'sec-ch-ua-mobile': '?1',
+    'user-agent': 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.131 Mobile Safari/537.36 Edg/92.0.902.67',
+    'content-type': 'application/json;charset=UTF-8',
+    'origin': 'https://portalbnmp.cnj.jus.br',
+    'sec-fetch-site': 'same-origin',
+    'sec-fetch-mode': 'cors',
+    'sec-fetch-dest': 'empty',
+    'referer': 'https://portalbnmp.cnj.jus.br/',
+    'accept-language': 'en-US,en;q=0.9',
+    'cookie': 'portalbnmp=eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJndWVzdF9wb3J0YWxibm1wIiwiYXV0aCI6IlJPTEVfQU5PTllNT1VTIiwiZXhwIjoxNjI4NjkxNDg3fQ.PrvyrMLkPxOoVWuw6g53Vjvuqtq-5YLqrevhVdBZ5JDkNiY3qwKc_S-stcJXlMja2h2MWAnrnXiYpad7G1Lcxg',
+}
+
 start_time = time.time()
 df = pd.DataFrame()
 erros = 0
@@ -9,22 +26,6 @@ for id_estado in range(1, 28):
     page_number = 0
     last_page = 1
     while page_number < last_page:
-        headers = {
-            'authority': 'portalbnmp.cnj.jus.br',
-            'sec-ch-ua': '"Chromium";v="92", " Not A;Brand";v="99", "Microsoft Edge";v="92"',
-            'accept': 'application/json',
-            'fingerprint': '',
-            'sec-ch-ua-mobile': '?1',
-            'user-agent': 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.131 Mobile Safari/537.36 Edg/92.0.902.67',
-            'content-type': 'application/json;charset=UTF-8',
-            'origin': 'https://portalbnmp.cnj.jus.br',
-            'sec-fetch-site': 'same-origin',
-            'sec-fetch-mode': 'cors',
-            'sec-fetch-dest': 'empty',
-            'referer': 'https://portalbnmp.cnj.jus.br/',
-            'accept-language': 'en-US,en;q=0.9',
-            'cookie': 'portalbnmp=eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJndWVzdF9wb3J0YWxibm1wIiwiYXV0aCI6IlJPTEVfQU5PTllNT1VTIiwiZXhwIjoxNjI4NjkxNDg3fQ.PrvyrMLkPxOoVWuw6g53Vjvuqtq-5YLqrevhVdBZ5JDkNiY3qwKc_S-stcJXlMja2h2MWAnrnXiYpad7G1Lcxg',
-        }
 
         params = (
             ('page', str(page_number)),
