@@ -1,7 +1,27 @@
 import time
-import pandas as pd
 import requests
+import csv
 from fake_useragent import UserAgent
+
+fieldnames = ['id',
+              'numeroPeca',
+              'numeroProcesso',
+              'nomePessoa',
+              'alcunha',
+              'descricaoStatus',
+              'dataExpedicao',
+              'nomeOrgao',
+              'descricaoPeca',
+              'idTipoPeca',
+              'nomeMae',
+              'nomePai',
+              'descricaoSexo',
+              'descricaoProfissao',
+              'dataNascimento',
+              'numeroPecaAnterior',
+              'numeroPecaFormatado',
+              'dataNascimentoFormatada',
+              'dataExpedicaoFormatada']
 
 ua = UserAgent()
 headers = {
@@ -18,8 +38,11 @@ headers = {
     'cookie': 'portalbnmp=eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJndWVzdF9wb3J0YWxibm1wIiwiYXV0aCI6IlJPTEVfQU5PTllNT1VTIiwiZXhwIjoxNjI4NTYwMzQxfQ.kkLHa_3zIT5Tq1aW2xhrTa8XshGRdKjlFrNj4APgizxbxfZZjRaLFvvNnzHKGq2PYjhCcGrRWENiJ3Hi0k8KtA',
 }
 
+with open('data_BNMP_POST.tsv', 'w', newline='\n', encoding="utf-8") as tsvfile:
+    writer = csv.DictWriter(tsvfile, fieldnames=fieldnames, delimiter='\t')
+    writer.writeheader()
+
 start_time = time.time()
-df = pd.DataFrame()
 erros = 0
 for id_estado in range(1, 28):
     page_number = 0
@@ -56,8 +79,10 @@ for id_estado in range(1, 28):
         row_data = response.json()
 
         last_page = row_data['totalPages']
-        for e in row_data["content"]:
-            df = df.append(e, ignore_index=True)
+        with open('data_BNMP_POST.tsv', 'a+', newline='\n', encoding="utf-8") as tsvfile:
+            writer = csv.DictWriter(tsvfile, fieldnames=fieldnames, delimiter='\t')
+            for e in row_data["content"]:
+                writer.writerow(e)
 
         fim = time.time()
 
@@ -65,8 +90,6 @@ for id_estado in range(1, 28):
 
         page_number += 1
 
-if len(df) > 0:
-    df.to_csv("data_BNMP_POST.tsv", index=False, sep="\t")
 
 end_time = time.time()
 
