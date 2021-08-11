@@ -3,6 +3,18 @@ import requests
 import csv
 from fake_useragent import UserAgent
 
+
+def write_id(id_list):
+    """
+    :type id_list: list
+    """
+    with open('ids_list.py', 'w', newline='', encoding="utf-8") as pyfile:
+        pyfile.write("ids_list = [")
+        for id in id_list:
+            pyfile.write(str(id) + ", ")
+        pyfile.write("]")
+
+
 start_time = time.time()
 fieldnames = ['id',
               'numeroPeca',
@@ -44,6 +56,8 @@ with open('data_BNMP_POST.tsv', 'w', newline='\n', encoding="utf-8") as tsvfile:
     writer = csv.DictWriter(tsvfile, fieldnames=fieldnames, delimiter='\t')
     writer.writeheader()
 
+list_ids = []
+
 erros = 0
 for id_estado in range(1, 28):
     page_number = 0
@@ -77,6 +91,7 @@ for id_estado in range(1, 28):
                 writer = csv.DictWriter(tsvfile, fieldnames=fieldnames, delimiter='\t')
                 for e in row_data["content"]:
                     writer.writerow(e)
+                    list_ids.append(e["id"])
 
             fim_parse = time.time()
 
@@ -93,8 +108,11 @@ for id_estado in range(1, 28):
             #print(response.raise_for_status())
             break
 
-
-
+print("Escrevendo arquivo ids_list.py..")
+inicio_escrita = time.time()
+write_id(list_ids)
+fim_escrita = time.time()
+print(f"Tempo para escrita: {(fim_escrita - inicio_escrita):.2f} segundos.")
 end_time = time.time()
 
 print(f"Total de erros: {erros}")
