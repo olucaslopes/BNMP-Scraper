@@ -48,7 +48,6 @@ for id_estado in range(1, 28):
     page_number = 0
     last_page = 1
     while page_number < last_page:
-
         params = (
             ('page', str(page_number)),
             ('size', '2000'),
@@ -60,10 +59,28 @@ for id_estado in range(1, 28):
         print(f"Acessando estado {id_estado}/27, página {page_number+1}/{last_page}")
 
         inicio = time.time()
+        response = requests.post(
+            url='https://portalbnmp.cnj.jus.br/bnmpportal/api/pesquisa-pecas/filter',
+            headers=headers,
+            params=params,
+            data=data
+        )
 
-        response = requests.post('https://portalbnmp.cnj.jus.br/bnmpportal/api/pesquisa-pecas/filter', headers=headers, params=params, data=data)
+        if response.status_code == 200:
+            row_data = response.json()
 
-        if response.status_code != 200:
+            last_page = row_data['totalPages']
+            with open('data_BNMP_POST.tsv', 'a+', newline='\n', encoding="utf-8") as tsvfile:
+                writer = csv.DictWriter(tsvfile, fieldnames=fieldnames, delimiter='\t')
+                for e in row_data["content"]:
+                    writer.writerow(e)
+
+            fim = time.time()
+
+            print(f"Tempo para acesso e parse: {(fim - inicio):.2f} segundos.")
+
+            page_number += 1
+        else:
             print(f"Deu ruim! Status code: {response.status_code}")
             if erros > 10:
                 break
@@ -76,19 +93,6 @@ for id_estado in range(1, 28):
                 erros += 1
                 continue
 
-        row_data = response.json()
-
-        last_page = row_data['totalPages']
-        with open('data_BNMP_POST.tsv', 'a+', newline='\n', encoding="utf-8") as tsvfile:
-            writer = csv.DictWriter(tsvfile, fieldnames=fieldnames, delimiter='\t')
-            for e in row_data["content"]:
-                writer.writerow(e)
-
-        fim = time.time()
-
-        print(f"Tempo para acesso e parse: {(fim-inicio):.2f} segundos.")
-
-        page_number += 1
 
 
 end_time = time.time()
