@@ -3,6 +3,7 @@ import requests
 import csv
 from fake_useragent import UserAgent
 
+start_time = time.time()
 fieldnames = ['id',
               'numeroPeca',
               'numeroProcesso',
@@ -42,7 +43,6 @@ with open('data_BNMP_POST.tsv', 'w', newline='\n', encoding="utf-8") as tsvfile:
     writer = csv.DictWriter(tsvfile, fieldnames=fieldnames, delimiter='\t')
     writer.writeheader()
 
-start_time = time.time()
 erros = 0
 for id_estado in range(1, 28):
     page_number = 0
@@ -58,15 +58,17 @@ for id_estado in range(1, 28):
 
         print(f"Acessando estado {id_estado}/27, página {page_number+1}/{last_page}")
 
-        inicio = time.time()
+        inicio_acesso = time.time()
         response = requests.post(
             url='https://portalbnmp.cnj.jus.br/bnmpportal/api/pesquisa-pecas/filter',
             headers=headers,
             params=params,
             data=data
         )
+        fim_acesso = time.time()
 
         if response.status_code == 200:
+            inicio_parse = time.time()
             row_data = response.json()
 
             last_page = row_data['totalPages']
@@ -75,9 +77,11 @@ for id_estado in range(1, 28):
                 for e in row_data["content"]:
                     writer.writerow(e)
 
-            fim = time.time()
+            fim_parse = time.time()
 
-            print(f"Tempo para acesso e parse: {(fim - inicio):.2f} segundos.")
+            print(f"Tempo para acesso e parse: {fim_parse - inicio_acesso:.2f} segundos.")
+            print(f"Acesso: {fim_acesso - inicio_acesso:.2f} segundos.")
+            print(f"Parse: {fim_parse - inicio_parse:.2f} segundos.")
 
             page_number += 1
         else:
