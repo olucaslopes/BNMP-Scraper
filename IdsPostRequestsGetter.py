@@ -82,19 +82,16 @@ for id_estado in range(1, 28):
             page_number += 1
         else:
             print(f"Deu ruim! Status code: {response.status_code}")
-            if erros > 10:
-                break
-            time.sleep(5)
-            response = requests.post('https://portalbnmp.cnj.jus.br/bnmpportal/api/pesquisa-pecas/filter', headers=headers,
-                                     params=params, data=data)
-
-            if response.status_code != 200:
-                print(f"Não deu mesmo :/ Status code: {response.status_code}")
-                erros += 1
-                continue
+            print("Erro inesperado :(. Você está olhando pros estados", f"<{id_estado}>")
+            erros += 1
+            #print(response.text)
+            #print(response.raise_for_status())
+            break
 
 
 
 end_time = time.time()
 
+print(f"Total de erros: {erros}")
+print()
 print(f"Tempo total de execução: {(end_time-start_time):.2f} segundos.")
