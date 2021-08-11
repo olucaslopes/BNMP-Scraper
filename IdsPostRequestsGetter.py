@@ -25,6 +25,7 @@ fieldnames = ['id',
               'dataExpedicaoFormatada']
 
 ua = UserAgent()
+cookie = 'portalbnmp=eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJndWVzdF9wb3J0YWxibm1wIiwiYXV0aCI6IlJPTEVfQU5PTllNT1VTIiwiZXhwIjoxNjI4NTYwMzQxfQ.kkLHa_3zIT5Tq1aW2xhrTa8XshGRdKjlFrNj4APgizxbxfZZjRaLFvvNnzHKGq2PYjhCcGrRWENiJ3Hi0k8KtA'
 headers = {
     'authority': 'portalbnmp.cnj.jus.br',
     'accept': 'application/json',
@@ -36,7 +37,7 @@ headers = {
     'sec-fetch-dest': 'empty',
     'referer': 'https://portalbnmp.cnj.jus.br/',
     'accept-language': 'en-US,en;q=0.9',
-    'cookie': 'portalbnmp=eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJndWVzdF9wb3J0YWxibm1wIiwiYXV0aCI6IlJPTEVfQU5PTllNT1VTIiwiZXhwIjoxNjI4NTYwMzQxfQ.kkLHa_3zIT5Tq1aW2xhrTa8XshGRdKjlFrNj4APgizxbxfZZjRaLFvvNnzHKGq2PYjhCcGrRWENiJ3Hi0k8KtA',
+    'cookie': cookie,
 }
 
 with open('data_BNMP_POST.tsv', 'w', newline='\n', encoding="utf-8") as tsvfile:
