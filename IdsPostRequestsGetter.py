@@ -15,6 +15,19 @@ def write_id(id_list):
         pyfile.write("]")
 
 
+def parse_municipios(lista_municipios) -> list:
+    """A partir do id da de umaUF retorna
+    o id de  todos dos municípios dessa UF."""
+
+    response_munic = requests.get('https://portalbnmp.cnj.jus.br/scaservice/api/municipios/por-uf/' + str(lista_municipios),
+                                  headers=headers)
+    munic_list = response_munic.json()
+    ids_list = []
+    for e in munic_list:
+        ids_list.append(e['id'])
+    return ids_list
+
+
 start_time = time.time()
 fieldnames = ['id',
               'numeroPeca',
@@ -56,7 +69,7 @@ with open('data_BNMP_POST.tsv', 'w', newline='\n', encoding="utf-8") as tsvfile:
     writer = csv.DictWriter(tsvfile, fieldnames=fieldnames, delimiter='\t')
     writer.writeheader()
 
-list_ids = []
+ids_list = []
 
 erros = 0
 for id_estado in range(1, 28):
@@ -87,19 +100,70 @@ for id_estado in range(1, 28):
             row_data = response.json()
 
             last_page = row_data['totalPages']
-            with open('data_BNMP_POST.tsv', 'a+', newline='\n', encoding="utf-8") as tsvfile:
-                writer = csv.DictWriter(tsvfile, fieldnames=fieldnames, delimiter='\t')
-                for e in row_data["content"]:
-                    writer.writerow(e)
-                    list_ids.append(e["id"])
+            if last_page < 6:
+                with open('data_BNMP_POST.tsv', 'a+', newline='\n', encoding="utf-8") as tsvfile:
+                    writer = csv.DictWriter(tsvfile, fieldnames=fieldnames, delimiter='\t')
+                    for e in row_data["content"]:
+                        writer.writerow(e)
+                        ids_list.append(e["id"])
 
-            fim_parse = time.time()
+                fim_parse = time.time()
 
-            print(f"Tempo para acesso e parse: {fim_parse - inicio_acesso:.2f} segundos.")
-            print(f"Acesso: {fim_acesso - inicio_acesso:.2f} segundos.")
-            print(f"Parse: {fim_parse - inicio_parse:.2f} segundos.")
+                print(f"Tempo para acesso e parse: {fim_parse - inicio_acesso:.2f} segundos.")
+                print(f"Acesso: {fim_acesso - inicio_acesso:.2f} segundos.")
+                print(f"Parse: {fim_parse - inicio_parse:.2f} segundos.")
 
-            page_number += 1
+                page_number += 1
+            else:
+                id_municipios = parse_municipios(id_estado)
+                tot_municipios = len(id_municipios)
+                munic_cont = 0
+                for id_municipio in id_municipios:
+                    page_number = 0
+                    last_page = 1
+                    munic_cont += 1
+                    while page_number < last_page:
+                        data = '{"buscaOrgaoRecursivo":false,"orgaoExpeditor":{},"idEstado":' + str(str(id_estado)) + ',"idMunicipio":' + str(id_municipio) + '}'
+
+                        params = (
+                            ('page', str(page_number)),
+                            ('size', '2000'),
+                            ('sort', ''),
+                        )
+
+                        print(f"Acessando MUNICÍPIO({id_municipio}) {munic_cont}/{tot_municipios}, página {page_number + 1}/{last_page}")
+                        inicio_acesso = time.time()
+                        response_munic = requests.post(
+                            url='https://portalbnmp.cnj.jus.br/bnmpportal/api/pesquisa-pecas/filter',
+                            headers=headers,
+                            params=params,
+                            data=data
+                        )
+                        fim_acesso = time.time()
+                        if response_munic.status_code == 200:
+                            inicio_parse = time.time()
+                            raw_data_munic = response_munic.json()
+
+                            last_page = raw_data_munic['totalPages']
+
+                            with open('data_BNMP_POST.tsv', 'a+', newline='\n', encoding="utf-8") as tsvfile:
+                                writer = csv.DictWriter(tsvfile, fieldnames=fieldnames, delimiter='\t')
+                                for e in raw_data_munic["content"]:
+                                    writer.writerow(e)
+                                    ids_list.append(e["id"])
+                            fim_parse = time.time()
+
+                            print(f"Tempo para acesso e parse: {fim_parse - inicio_acesso:.2f} segundos.")
+                            print(f"Acesso: {fim_acesso - inicio_acesso:.2f} segundos.")
+                            print(f"Parse: {fim_parse - inicio_parse:.2f} segundos.")
+
+                            page_number += 1
+                        else:
+                            print(f"Deu ruim! Status code: {response_munic.status_code}")
+                            print("Você está olhando pros Municípios",
+                                  f"<{id_estado}:{id_municipio}>")
+                            erros += 1
+                            break
         else:
             print(f"Deu ruim! Status code: {response.status_code}")
             print("Erro inesperado :(. Você está olhando pros estados", f"<{id_estado}>")
@@ -110,7 +174,7 @@ for id_estado in range(1, 28):
 
 print("Escrevendo arquivo ids_list.py..")
 inicio_escrita = time.time()
-write_id(list_ids)
+write_id(ids_list)
 fim_escrita = time.time()
 print(f"Tempo para escrita: {(fim_escrita - inicio_escrita):.2f} segundos.")
 end_time = time.time()
