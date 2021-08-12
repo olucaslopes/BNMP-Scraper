@@ -1,71 +1,83 @@
-import time
-import requests
-import csv
 from fake_useragent import UserAgent
-
+from utils.utils import *
+from tqdm import tqdm
+import requests
+import time
+import csv
 
 start_time = time.time()
 
-
-def write_id(id_list):
-    """
-    :type id_list: list
-    """
-    with open('ids_list.py', 'w', newline='', encoding="utf-8") as pyfile:
-        pyfile.write("ids_list = [")
-        for id in id_list:
-            pyfile.write(str(id) + ", ")
-        pyfile.write("]")
-
-
-def parse_municipios(lista_municipios) -> list:
-    """A partir do id da de umaUF retorna
-    o id de  todos dos municípios dessa UF."""
-
-    response_munic = requests.get('https://portalbnmp.cnj.jus.br/scaservice/api/municipios/por-uf/' + str(lista_municipios),
-                                  headers=headers)
-    munic_list = response_munic.json()
-    ids_list = []
-    for e in munic_list:
-        ids_list.append(e['id'])
-    return ids_list
-
-
-def parse_orgao(id_munic) -> list:
-    """A partir do id da de um município retorna
-    o id de todos os Órgãos Expeditores desse município."""
-
-    response_org = requests.get('https://portalbnmp.cnj.jus.br/bnmpportal/api/pesquisa-pecas/orgaos/municipio/' + str(id_munic),
-                                headers=headers)
-    org_list = response_org.json()
-    ids_list = []
-    for e in org_list:
-        ids_list.append(e['id'])
-    return ids_list
-
-
-fieldnames = ['id',
-              'numeroPeca',
-              'numeroProcesso',
-              'nomePessoa',
-              'alcunha',
-              'descricaoStatus',
-              'dataExpedicao',
-              'nomeOrgao',
-              'descricaoPeca',
-              'idTipoPeca',
-              'nomeMae',
-              'nomePai',
-              'descricaoSexo',
-              'descricaoProfissao',
-              'dataNascimento',
-              'numeroPecaAnterior',
-              'numeroPecaFormatado',
-              'dataNascimentoFormatada',
-              'dataExpedicaoFormatada']
+fieldnames = ['id', 'dataExpedicao', 'dataCriacao', 'numeroPeca', 'tipoPeca_id', 'tipoPeca_descricao', 'status_id',
+              'status_descricao', 'numeroProcesso', 'dataExpedicaoString', 'url', 'numeroIndividuo',
+              'numeroPecaAnterior', 'pessoa_id', 'pessoa_enderecos', 'pessoa_outrasAlcunhas', 'pessoa_outrosNomes',
+              'pessoa_nomePai', 'pessoa_nomeMae', 'pessoa_dataNascimento', 'pessoa_foto', 'pessoa_telefone',
+              'pessoa_documento', 'pessoa_sinaisMarcas', 'pessoa_datasNascimentoString', 'pessoa_outrosNomesString',
+              'pessoa_outrasAlcunhasString', 'pessoa_nomeMaeString', 'pessoa_nomePaiString', 'pessoa_numeroIndividuo',
+              'pessoa_dadosGeraisPessoa_paisNascimento_nome', 'pessoa_dadosGeraisPessoa_paisNascimento_id',
+              'pessoa_dadosGeraisPessoa_naturalidade_id', 'pessoa_dadosGeraisPessoa_naturalidade_nome',
+              'pessoa_dadosGeraisPessoa_naturalidade_uf', 'pessoa_dadosGeraisPessoa_naturalidade_codIbge',
+              'pessoa_dadosGeraisPessoa_naturalidade_flgDistrito',
+              'pessoa_dadosGeraisPessoa_naturalidade_idCorporativo', 'pessoa_dadosGeraisPessoa_sexo_id',
+              'pessoa_dadosGeraisPessoa_sexo_descricao', 'pessoa_dadosGeraisPessoa_profissao', 'orgaoUsuarioCriador_id',
+              'orgaoUsuarioCriador_externo', 'orgaoUsuarioCriador_nome', 'orgaoUsuarioCriador_telefone',
+              'orgaoUsuarioCriador_ativo', 'orgaoUsuarioCriador_dtCadastro', 'orgaoUsuarioCriador_tipo',
+              'orgaoUsuarioCriador_municipio_id', 'orgaoUsuarioCriador_municipio_nome',
+              'orgaoUsuarioCriador_municipio_uf_id', 'orgaoUsuarioCriador_municipio_uf_nome',
+              'orgaoUsuarioCriador_municipio_uf_sigla', 'orgaoUsuarioCriador_municipio_uf_paisId',
+              'orgaoUsuarioCriador_municipio_codIbge', 'orgaoUsuarioCriador_municipio_flgDistrito',
+              'orgaoUsuarioCriador_municipio_idCorporativo', 'orgaoUsuarioCriador_usuarioId',
+              'orgaoUsuarioCriador_orgaoPaiId', 'orgaoUsuarioCriador_orgaoPaiNome',
+              'orgaoUsuarioCriador_orgaoTribunal_id', 'orgaoUsuarioCriador_orgaoTribunal_externo',
+              'orgaoUsuarioCriador_orgaoTribunal_nome', 'orgaoUsuarioCriador_orgaoTribunal_telefone',
+              'orgaoUsuarioCriador_orgaoTribunal_ativo', 'orgaoUsuarioCriador_orgaoTribunal_dtCadastro',
+              'orgaoUsuarioCriador_orgaoTribunal_tipo', 'orgaoUsuarioCriador_orgaoTribunal_municipio',
+              'orgaoUsuarioCriador_orgaoTribunal_usuarioId', 'orgaoUsuarioCriador_orgaoTribunal_orgaoPaiId',
+              'orgaoUsuarioCriador_orgaoTribunal_orgaoPaiNome', 'orgaoUsuarioCriador_orgaoTribunal_orgaoTribunal',
+              'orgaoUsuarioCriador_orgaoTribunal_filhos', 'orgaoUsuarioCriador_orgaoTribunal_logomarca',
+              'orgaoUsuarioCriador_orgaoTribunal_cep', 'orgaoUsuarioCriador_orgaoTribunal_endereco',
+              'orgaoUsuarioCriador_orgaoTribunal_bairro', 'orgaoUsuarioCriador_orgaoTribunal_complemento',
+              'orgaoUsuarioCriador_orgaoTribunal_ordem', 'orgaoUsuarioCriador_orgaoTribunal_codHierarquia',
+              'orgaoUsuarioCriador_orgaoTribunal_plantaoId', 'orgaoUsuarioCriador_orgaoTribunal_unidadeJurisdicional',
+              'orgaoUsuarioCriador_orgaoTribunal_dominioEmails', 'orgaoUsuarioCriador_orgaoTribunal_ativoFormatado',
+              'orgaoUsuarioCriador_filhos', 'orgaoUsuarioCriador_logomarca', 'orgaoUsuarioCriador_cep',
+              'orgaoUsuarioCriador_endereco', 'orgaoUsuarioCriador_bairro', 'orgaoUsuarioCriador_complemento',
+              'orgaoUsuarioCriador_ordem', 'orgaoUsuarioCriador_codHierarquia', 'orgaoUsuarioCriador_plantaoId',
+              'orgaoUsuarioCriador_unidadeJurisdicional', 'orgaoUsuarioCriador_dominioEmails',
+              'orgaoUsuarioCriador_ativoFormatado', 'orgaoJudiciario_id', 'orgaoJudiciario_externo',
+              'orgaoJudiciario_nome', 'orgaoJudiciario_telefone', 'orgaoJudiciario_ativo', 'orgaoJudiciario_dtCadastro',
+              'orgaoJudiciario_tipo', 'orgaoJudiciario_municipio_id', 'orgaoJudiciario_municipio_nome',
+              'orgaoJudiciario_municipio_uf_id', 'orgaoJudiciario_municipio_uf_nome',
+              'orgaoJudiciario_municipio_uf_sigla', 'orgaoJudiciario_municipio_uf_paisId',
+              'orgaoJudiciario_municipio_codIbge', 'orgaoJudiciario_municipio_flgDistrito',
+              'orgaoJudiciario_municipio_idCorporativo', 'orgaoJudiciario_usuarioId', 'orgaoJudiciario_orgaoPaiId',
+              'orgaoJudiciario_orgaoPaiNome', 'orgaoJudiciario_orgaoTribunal_id',
+              'orgaoJudiciario_orgaoTribunal_externo', 'orgaoJudiciario_orgaoTribunal_nome',
+              'orgaoJudiciario_orgaoTribunal_telefone', 'orgaoJudiciario_orgaoTribunal_ativo',
+              'orgaoJudiciario_orgaoTribunal_dtCadastro', 'orgaoJudiciario_orgaoTribunal_tipo',
+              'orgaoJudiciario_orgaoTribunal_municipio', 'orgaoJudiciario_orgaoTribunal_usuarioId',
+              'orgaoJudiciario_orgaoTribunal_orgaoPaiId', 'orgaoJudiciario_orgaoTribunal_orgaoPaiNome',
+              'orgaoJudiciario_orgaoTribunal_orgaoTribunal', 'orgaoJudiciario_orgaoTribunal_filhos',
+              'orgaoJudiciario_orgaoTribunal_logomarca', 'orgaoJudiciario_orgaoTribunal_cep',
+              'orgaoJudiciario_orgaoTribunal_endereco', 'orgaoJudiciario_orgaoTribunal_bairro',
+              'orgaoJudiciario_orgaoTribunal_complemento', 'orgaoJudiciario_orgaoTribunal_ordem',
+              'orgaoJudiciario_orgaoTribunal_codHierarquia', 'orgaoJudiciario_orgaoTribunal_plantaoId',
+              'orgaoJudiciario_orgaoTribunal_unidadeJurisdicional', 'orgaoJudiciario_orgaoTribunal_dominioEmails',
+              'orgaoJudiciario_orgaoTribunal_ativoFormatado', 'orgaoJudiciario_filhos', 'orgaoJudiciario_logomarca',
+              'orgaoJudiciario_cep', 'orgaoJudiciario_endereco', 'orgaoJudiciario_bairro',
+              'orgaoJudiciario_complemento', 'orgaoJudiciario_ordem', 'orgaoJudiciario_codHierarquia',
+              'orgaoJudiciario_plantaoId', 'orgaoJudiciario_unidadeJurisdicional', 'orgaoJudiciario_dominioEmails',
+              'orgaoJudiciario_ativoFormatado', 'sinteseDecisao', 'magistrado', 'dataAtualString', 'mandado',
+              'motivoExpedicaoAlvara', 'motivoExpedicao', 'dataValidade', 'dataValidadeString', 'especiePrisao',
+              'cumprimento', 'observacao', 'localOcorrencia', 'tempoPena', 'tempoPenaAno', 'tempoPenaMes',
+              'tempoPenaDia', 'regimePrisional', 'recaptura', 'alcunhasString', 'nomesString', 'nomesPaiString',
+              'nomesMaeString', 'tipificacoesPenaisString', 'localDataFormatado', 'dataNascimentoString',
+              'mandadosInternacaoAlcancados', 'mandadosPrisaoAlcancados', 'outrasPecas',
+              'contramandadoMandadoAlcancados', 'isSolturaConcedida', 'tipificacaoPenal',
+              'pessoa_dadosGeraisPessoa_naturalidade_uf_id', 'pessoa_dadosGeraisPessoa_naturalidade_uf_nome',
+              'pessoa_dadosGeraisPessoa_naturalidade_uf_sigla', 'pessoa_dadosGeraisPessoa_naturalidade_uf_paisId']
 
 ua = UserAgent()
-cookie = 'portalbnmp=eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJndWVzdF9wb3J0YWxibm1wIiwiYXV0aCI6IlJPTEVfQU5PTllNT1VTIiwiZXhwIjoxNjI4NTYwMzQxfQ.kkLHa_3zIT5Tq1aW2xhrTa8XshGRdKjlFrNj4APgizxbxfZZjRaLFvvNnzHKGq2PYjhCcGrRWENiJ3Hi0k8KtA'
+cookie = 'portalbnmp=eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJndWVzdF9wb3J0YWxibm1wIiwiYXV0aCI6IlJPTEVfQU5PTllNT1VTIiwiZXhwIjoxNjI4ODU3MjYyfQ.Eox3s6_vCT8ac13tVI2JyqqbehW2AsOFYVUbxaozsb_Zy0jUvljPjRCXldgiFYYUECA1Gqaq-KQv_GbYKzBtjg'
 headers = {
     'authority': 'portalbnmp.cnj.jus.br',
     'accept': 'application/json',
@@ -87,7 +99,7 @@ with open('data_BNMP_POST.tsv', 'w', newline='\n', encoding="utf-8") as tsvfile:
 ids_list = []
 
 erros = 0
-for id_estado in range(1, 28):
+for id_estado in range(1, 2):
     page_number = 0
     last_page = 1
     while page_number < last_page:
@@ -99,7 +111,7 @@ for id_estado in range(1, 28):
 
         data = '{"buscaOrgaoRecursivo":false,"orgaoExpeditor":{},"idEstado":' + str(id_estado) + '}'
 
-        print(f"Acessando estado {id_estado}/27, página {page_number+1}/{last_page}")
+        print(f"Acessando estado {id_estado}/27, página {page_number + 1}/{last_page}")
 
         inicio_acesso = time.time()
         response = requests.post(
@@ -110,7 +122,7 @@ for id_estado in range(1, 28):
         )
         fim_acesso = time.time()
 
-        if response.status_code == 200:
+        if response.ok:
             inicio_parse = time.time()
             row_data = response.json()
 
@@ -118,9 +130,13 @@ for id_estado in range(1, 28):
             if last_page < 6:
                 with open('data_BNMP_POST.tsv', 'a+', newline='\n', encoding="utf-8") as tsvfile:
                     writer = csv.DictWriter(tsvfile, fieldnames=fieldnames, delimiter='\t')
-                    for e in row_data["content"]:
-                        writer.writerow(e)
+                    conteudos_completos = list()
+                    for e in tqdm(row_data["content"]):
+                        conteudo_completo = pega_conteudo_completo(e, headers)
+                        conteudos_completos.append(conteudo_completo)
                         ids_list.append(e["id"])
+
+                    writer.writerows(conteudo_completo)
 
                 fim_parse = time.time()
 
@@ -140,7 +156,8 @@ for id_estado in range(1, 28):
                     tot_orgaos = None
                     org_cont = 0
                     while page_number < last_page and not (org_cont == tot_orgaos):
-                        data = '{"buscaOrgaoRecursivo":false,"orgaoExpeditor":{},"idEstado":' + str(id_estado) + ',"idMunicipio":' + str(id_municipio) + '}'
+                        data = '{"buscaOrgaoRecursivo":false,"orgaoExpeditor":{},"idEstado":' + str(
+                            id_estado) + ',"idMunicipio":' + str(id_municipio) + '}'
 
                         params = (
                             ('page', str(page_number)),
@@ -148,7 +165,8 @@ for id_estado in range(1, 28):
                             ('sort', ''),
                         )
 
-                        print(f"Acessando MUNICÍPIO({id_municipio}) {munic_cont}/{tot_municipios}, página {page_number + 1}/{last_page}")
+                        print(
+                            f"Acessando MUNICÍPIO({id_municipio}) {munic_cont}/{tot_municipios}, página {page_number + 1}/{last_page}")
                         inicio_acesso = time.time()
                         response_munic = requests.post(
                             url='https://portalbnmp.cnj.jus.br/bnmpportal/api/pesquisa-pecas/filter',
@@ -167,7 +185,8 @@ for id_estado in range(1, 28):
                                 with open('data_BNMP_POST.tsv', 'a+', newline='\n', encoding="utf-8") as tsvfile:
                                     writer = csv.DictWriter(tsvfile, fieldnames=fieldnames, delimiter='\t')
                                     for e in raw_data_munic["content"]:
-                                        writer.writerow(e)
+                                        conteudo_completo = pega_conteudo_completo(e, headers)
+                                        writer.writerow(conteudo_completo)
                                         ids_list.append(e["id"])
                                 fim_parse = time.time()
 
@@ -218,7 +237,8 @@ for id_estado in range(1, 28):
                                                     writer = csv.DictWriter(tsvfile, fieldnames=fieldnames,
                                                                             delimiter='\t')
                                                     for e in raw_data_org["content"]:
-                                                        writer.writerow(e)
+                                                        conteudo_completo = pega_conteudo_completo(e, headers)
+                                                        writer.writerow(conteudo_completo)
                                                         ids_list.append(e["id"])
                                             fim_parse = time.time()
 
@@ -244,8 +264,8 @@ for id_estado in range(1, 28):
             print(f"Deu ruim! Status code: {response.status_code}")
             print("Erro inesperado :(. Você está olhando pros estados", f"<{id_estado}>")
             erros += 1
-            #print(response.text)
-            #print(response.raise_for_status())
+            # print(response.text)
+            # print(response.raise_for_status())
             break
 
 print("Escrevendo arquivo ids_list.py..")
@@ -257,4 +277,4 @@ end_time = time.time()
 
 print(f"Total de erros: {erros}")
 print()
-print(f"Tempo total de execução: {(end_time-start_time):.2f} segundos.")
+print(f"Tempo total de execução: {(end_time - start_time):.2f} segundos.")
