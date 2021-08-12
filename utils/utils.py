@@ -1,3 +1,4 @@
+import collections
 import requests
 
 
@@ -45,5 +46,17 @@ def pega_conteudo_completo(linha: dict, headers: dict):
     response = requests.get(
         url=f'https://portalbnmp.cnj.jus.br/bnmpportal/api/certidaos/{id_mandado}/{id_tipo_peca}',
         headers=headers
-    )
-    return response.json()
+    ).json()
+    return flatten(response)
+
+
+def flatten(d, parent_key='', sep='_'):
+    items = []
+    for k, v in d.items():
+        new_key = parent_key + sep + k if parent_key else k
+        if isinstance(v, collections.MutableMapping):
+            items.extend(flatten(v, new_key, sep=sep).items())
+        else:
+            items.append((new_key, v))
+    return dict(items)
+
