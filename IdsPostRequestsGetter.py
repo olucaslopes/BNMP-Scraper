@@ -4,6 +4,9 @@ import csv
 from fake_useragent import UserAgent
 
 
+start_time = time.time()
+
+
 def write_id(id_list):
     """
     :type id_list: list
@@ -28,7 +31,19 @@ def parse_municipios(lista_municipios) -> list:
     return ids_list
 
 
-start_time = time.time()
+def parse_orgao(id_munic) -> list:
+    """A partir do id da de um município retorna
+    o id de todos os Órgãos Expeditores desse município."""
+
+    response_org = requests.get('https://portalbnmp.cnj.jus.br/bnmpportal/api/pesquisa-pecas/orgaos/municipio/' + str(id_munic),
+                                headers=headers)
+    org_list = response_org.json()
+    ids_list = []
+    for e in org_list:
+        ids_list.append(e['id'])
+    return ids_list
+
+
 fieldnames = ['id',
               'numeroPeca',
               'numeroProcesso',
@@ -122,8 +137,10 @@ for id_estado in range(1, 28):
                     page_number = 0
                     last_page = 1
                     munic_cont += 1
-                    while page_number < last_page:
-                        data = '{"buscaOrgaoRecursivo":false,"orgaoExpeditor":{},"idEstado":' + str(str(id_estado)) + ',"idMunicipio":' + str(id_municipio) + '}'
+                    tot_orgaos = None
+                    org_cont = 0
+                    while page_number < last_page and not (org_cont == tot_orgaos):
+                        data = '{"buscaOrgaoRecursivo":false,"orgaoExpeditor":{},"idEstado":' + str(id_estado) + ',"idMunicipio":' + str(id_municipio) + '}'
 
                         params = (
                             ('page', str(page_number)),
@@ -146,18 +163,77 @@ for id_estado in range(1, 28):
 
                             last_page = raw_data_munic['totalPages']
 
-                            with open('data_BNMP_POST.tsv', 'a+', newline='\n', encoding="utf-8") as tsvfile:
-                                writer = csv.DictWriter(tsvfile, fieldnames=fieldnames, delimiter='\t')
-                                for e in raw_data_munic["content"]:
-                                    writer.writerow(e)
-                                    ids_list.append(e["id"])
-                            fim_parse = time.time()
+                            if last_page < 6:
+                                with open('data_BNMP_POST.tsv', 'a+', newline='\n', encoding="utf-8") as tsvfile:
+                                    writer = csv.DictWriter(tsvfile, fieldnames=fieldnames, delimiter='\t')
+                                    for e in raw_data_munic["content"]:
+                                        writer.writerow(e)
+                                        ids_list.append(e["id"])
+                                fim_parse = time.time()
 
-                            print(f"Tempo para acesso e parse: {fim_parse - inicio_acesso:.2f} segundos.")
-                            print(f"Acesso: {fim_acesso - inicio_acesso:.2f} segundos.")
-                            print(f"Parse: {fim_parse - inicio_parse:.2f} segundos.")
+                                print(f"Tempo para acesso e parse: {fim_parse - inicio_acesso:.2f} segundos.")
+                                print(f"Acesso: {fim_acesso - inicio_acesso:.2f} segundos.")
+                                print(f"Parse: {fim_parse - inicio_parse:.2f} segundos.")
 
-                            page_number += 1
+                                page_number += 1
+                            else:
+                                id_orgaos = parse_orgao(id_municipio)
+                                tot_orgaos = len(id_orgaos)
+                                for id_orgao in id_orgaos:
+                                    page_number = 0
+                                    last_page = 1
+                                    org_cont += 1
+                                    while page_number < last_page:
+                                        data = '{"buscaOrgaoRecursivo":false,"orgaoExpeditor":{"id":' + str(
+                                            id_orgao) + '},"idEstado":' + str(id_estado) + ',"idMunicipio":' + str(
+                                            id_municipio) + '}'
+
+                                        print(
+                                            f"Acessando ÓRGÃO({id_orgao}) {org_cont}/{tot_orgaos}, página {page_number + 1}/{last_page}")
+
+                                        params = (
+                                            ('page', str(page_number)),
+                                            ('size', '2000'),
+                                            ('sort', ''),
+                                        )
+
+                                        inicio_acesso = time.time()
+                                        response_org = requests.post(
+                                            url='https://portalbnmp.cnj.jus.br/bnmpportal/api/pesquisa-pecas/filter',
+                                            headers=headers,
+                                            params=params,
+                                            data=data
+                                        )
+                                        fim_acesso = time.time()
+
+                                        if response_org.status_code == 200:
+                                            inicio_parse = time.time()
+                                            raw_data_org = response_org.json()
+
+                                            last_page = raw_data_org['totalPages']
+
+                                            if last_page > 0:
+                                                with open('data_BNMP_POST.tsv', 'a+', newline='\n',
+                                                          encoding="utf-8") as tsvfile:
+                                                    writer = csv.DictWriter(tsvfile, fieldnames=fieldnames,
+                                                                            delimiter='\t')
+                                                    for e in raw_data_org["content"]:
+                                                        writer.writerow(e)
+                                                        ids_list.append(e["id"])
+                                            fim_parse = time.time()
+
+                                            print(
+                                                f"Tempo para acesso e parse: {fim_parse - inicio_acesso:.2f} segundos.")
+                                            print(f"Acesso: {fim_acesso - inicio_acesso:.2f} segundos.")
+                                            print(f"Parse: {fim_parse - inicio_parse:.2f} segundos.")
+
+                                            page_number += 1
+                                        else:
+                                            print(f"Deu ruim! Status code: {response_org.status_code}")
+                                            print("Você está olhando pros Órgãos Expeditores",
+                                                  f"<{id_estado}:{id_municipio}:{id_orgao}>")
+                                            erros += 1
+                                            break
                         else:
                             print(f"Deu ruim! Status code: {response_munic.status_code}")
                             print("Você está olhando pros Municípios",
