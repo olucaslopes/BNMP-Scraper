@@ -136,7 +136,7 @@ for id_estado in range(1, 2):
                         conteudos_completos.append(conteudo_completo)
                         ids_list.append(e["id"])
 
-                    writer.writerows(conteudo_completo)
+                    writer.writerows(conteudos_completos)
 
                 fim_parse = time.time()
 
@@ -146,7 +146,7 @@ for id_estado in range(1, 2):
 
                 page_number += 1
             else:
-                id_municipios = parse_municipios(id_estado)
+                id_municipios = parse_municipios(id_estado, headers=headers)
                 tot_municipios = len(id_municipios)
                 munic_cont = 0
                 for id_municipio in id_municipios:
@@ -196,7 +196,7 @@ for id_estado in range(1, 2):
 
                                 page_number += 1
                             else:
-                                id_orgaos = parse_orgao(id_municipio)
+                                id_orgaos = parse_orgao(id_municipio, headers=headers)
                                 tot_orgaos = len(id_orgaos)
                                 for id_orgao in id_orgaos:
                                     page_number = 0
