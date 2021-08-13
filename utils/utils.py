@@ -13,11 +13,11 @@ def write_id(id_list: list) -> None:
         pyfile.write("]")
 
 
-def parse_municipios(lista_municipios: list, headers: dict) -> list:
+def parse_municipios(id_uf: int, headers: dict) -> list:
     """A partir do id da de uma UF retorna
     o id de  todos dos municípios dessa UF."""
 
-    response_munic = requests.get('https://portalbnmp.cnj.jus.br/scaservice/api/municipios/por-uf/' + str(lista_municipios),
+    response_munic = requests.get('https://portalbnmp.cnj.jus.br/scaservice/api/municipios/por-uf/' + str(id_uf),
                                   headers=headers)
     munic_list = response_munic.json()
     ids_list = []
@@ -59,4 +59,3 @@ def flatten(d, parent_key='', sep='_'):
         else:
             items.append((new_key, v))
     return dict(items)
-
