@@ -77,7 +77,7 @@ fieldnames = ['id', 'dataExpedicao', 'dataCriacao', 'numeroPeca', 'tipoPeca_id',
               'pessoa_dadosGeraisPessoa_naturalidade_uf_sigla', 'pessoa_dadosGeraisPessoa_naturalidade_uf_paisId']
 
 ua = UserAgent()
-cookie = 'portalbnmp=eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJndWVzdF9wb3J0YWxibm1wIiwiYXV0aCI6IlJPTEVfQU5PTllNT1VTIiwiZXhwIjoxNjI4ODU3MjYyfQ.Eox3s6_vCT8ac13tVI2JyqqbehW2AsOFYVUbxaozsb_Zy0jUvljPjRCXldgiFYYUECA1Gqaq-KQv_GbYKzBtjg'
+cookie = "portalbnmp=eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJndWVzdF9wb3J0YWxibm1wIiwiYXV0aCI6IlJPTEVfQU5PTllNT1VTIiwiZXhwIjoxNjI4OTc2MTAzfQ.BgMi8EI52GPVcSJ56vu-jT8SZC2UcT_joDwBFGrtHzTW9H3iHl8jzJFTPGgII2mZrki1DILbjzTT4TWBqTBttw"
 headers = {
     'authority': 'portalbnmp.cnj.jus.br',
     'accept': 'application/json',
@@ -92,7 +92,7 @@ headers = {
     'cookie': cookie,
 }
 
-with open('data_BNMP_POST.tsv', 'w', newline='\n', encoding="utf-8") as tsvfile:
+with open('data_BNMP.tsv', 'w', newline='', encoding="utf-8") as tsvfile:
     writer = csv.DictWriter(tsvfile, fieldnames=fieldnames, delimiter='\t')
     writer.writeheader()
 
@@ -128,7 +128,7 @@ for id_estado in range(1, 2):
 
             last_page = row_data['totalPages']
             if last_page < 6:
-                with open('data_BNMP_POST.tsv', 'a+', newline='\n', encoding="utf-8") as tsvfile:
+                with open('data_BNMP.tsv', 'a+', newline='', encoding="utf-8") as tsvfile:
                     writer = csv.DictWriter(tsvfile, fieldnames=fieldnames, delimiter='\t')
                     conteudos_completos = list()
                     for e in tqdm(row_data["content"]):
@@ -182,7 +182,7 @@ for id_estado in range(1, 2):
                             last_page = raw_data_munic['totalPages']
 
                             if last_page < 6:
-                                with open('data_BNMP_POST.tsv', 'a+', newline='\n', encoding="utf-8") as tsvfile:
+                                with open('data_BNMP.tsv', 'a+', newline='', encoding="utf-8") as tsvfile:
                                     writer = csv.DictWriter(tsvfile, fieldnames=fieldnames, delimiter='\t')
                                     for e in raw_data_munic["content"]:
                                         conteudo_completo = pega_conteudo_completo(e, headers)
@@ -232,7 +232,7 @@ for id_estado in range(1, 2):
                                             last_page = raw_data_org['totalPages']
 
                                             if last_page > 0:
-                                                with open('data_BNMP_POST.tsv', 'a+', newline='\n',
+                                                with open('data_BNMP.tsv', 'a+', newline='',
                                                           encoding="utf-8") as tsvfile:
                                                     writer = csv.DictWriter(tsvfile, fieldnames=fieldnames,
                                                                             delimiter='\t')
