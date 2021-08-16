@@ -1,5 +1,4 @@
 from utils.utils import *
-from utils.envVars import *
 from tqdm import tqdm
 import requests
 import time
@@ -45,7 +44,7 @@ for id_estado in range(1, 2):
                     writer = csv.DictWriter(tsvfile, fieldnames=fieldnames, delimiter='\t', extrasaction='ignore')
                     conteudos_completos = list()
                     for e in tqdm(row_data["content"]):
-                        conteudo_completo = pega_conteudo_completo(e, headers)
+                        conteudo_completo = pega_conteudo_completo(e)
                         conteudos_completos.append(conteudo_completo)
 
                     writer.writerows(conteudos_completos)
@@ -58,7 +57,7 @@ for id_estado in range(1, 2):
 
                 page_number += 1
             else:
-                id_municipios = parse_municipios(id_estado, headers=headers)
+                id_municipios = parse_municipios(id_estado)
                 tot_municipios = len(id_municipios)
                 munic_cont = 0
                 for id_municipio in id_municipios:
@@ -97,7 +96,7 @@ for id_estado in range(1, 2):
                                 with open('data_BNMP.tsv', 'a+', newline='', encoding="utf-8") as tsvfile:
                                     writer = csv.DictWriter(tsvfile, fieldnames=fieldnames, delimiter='\t')
                                     for e in raw_data_munic["content"]:
-                                        conteudo_completo = pega_conteudo_completo(e, headers)
+                                        conteudo_completo = pega_conteudo_completo(e)
                                         writer.writerow(conteudo_completo)
                                 fim_parse = time.time()
 
@@ -107,7 +106,7 @@ for id_estado in range(1, 2):
 
                                 page_number += 1
                             else:
-                                id_orgaos = parse_orgao(id_municipio, headers=headers)
+                                id_orgaos = parse_orgao(id_municipio)
                                 tot_orgaos = len(id_orgaos)
                                 for id_orgao in id_orgaos:
                                     page_number = 0
@@ -148,7 +147,7 @@ for id_estado in range(1, 2):
                                                     writer = csv.DictWriter(tsvfile, fieldnames=fieldnames,
                                                                             delimiter='\t')
                                                     for e in raw_data_org["content"]:
-                                                        conteudo_completo = pega_conteudo_completo(e, headers)
+                                                        conteudo_completo = pega_conteudo_completo(e)
                                                         writer.writerow(conteudo_completo)
                                             fim_parse = time.time()
 
