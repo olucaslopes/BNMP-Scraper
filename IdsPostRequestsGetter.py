@@ -52,7 +52,6 @@ with open('data_BNMP.tsv', 'w', newline='', encoding="utf-8") as tsvfile:
     writer = csv.DictWriter(tsvfile, fieldnames=fieldnames, delimiter='\t')
     writer.writeheader()
 
-ids_list = []
 
 erros = 0
 for id_estado in range(1, 2):
@@ -90,7 +89,6 @@ for id_estado in range(1, 2):
                     for e in tqdm(row_data["content"]):
                         conteudo_completo = pega_conteudo_completo(e, headers)
                         conteudos_completos.append(conteudo_completo)
-                        ids_list.append(e["id"])
 
                     writer.writerows(conteudos_completos)
 
@@ -143,7 +141,6 @@ for id_estado in range(1, 2):
                                     for e in raw_data_munic["content"]:
                                         conteudo_completo = pega_conteudo_completo(e, headers)
                                         writer.writerow(conteudo_completo)
-                                        ids_list.append(e["id"])
                                 fim_parse = time.time()
 
                                 print(f"Tempo para acesso e parse: {fim_parse - inicio_acesso:.2f} segundos.")
@@ -195,7 +192,6 @@ for id_estado in range(1, 2):
                                                     for e in raw_data_org["content"]:
                                                         conteudo_completo = pega_conteudo_completo(e, headers)
                                                         writer.writerow(conteudo_completo)
-                                                        ids_list.append(e["id"])
                                             fim_parse = time.time()
 
                                             print(
@@ -224,11 +220,6 @@ for id_estado in range(1, 2):
             # print(response.raise_for_status())
             break
 
-print("Escrevendo arquivo ids_list.py..")
-inicio_escrita = time.time()
-write_id(ids_list)
-fim_escrita = time.time()
-print(f"Tempo para escrita: {(fim_escrita - inicio_escrita):.2f} segundos.")
 end_time = time.time()
 
 print(f"Total de erros: {erros}")
