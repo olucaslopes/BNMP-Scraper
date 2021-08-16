@@ -2,23 +2,14 @@ import collections
 import requests
 
 
-def write_id(id_list: list) -> None:
-    """
-    :type id_list: list
-    """
-    with open('ids_list.py', 'w', newline='', encoding="utf-8") as pyfile:
-        pyfile.write("ids_list = [")
-        for id in id_list:
-            pyfile.write(str(id) + ", ")
-        pyfile.write("]")
-
-
 def parse_municipios(id_uf: int, headers: dict) -> list:
     """A partir do id da de uma UF retorna
     o id de  todos dos municípios dessa UF."""
 
-    response_munic = requests.get('https://portalbnmp.cnj.jus.br/scaservice/api/municipios/por-uf/' + str(id_uf),
-                                  headers=headers)
+    response_munic = requests.get(
+        url=f'https://portalbnmp.cnj.jus.br/scaservice/api/municipios/por-uf/{id_uf}',
+        headers=headers
+    )
     munic_list = response_munic.json()
     ids_list = []
     for e in munic_list:
@@ -30,8 +21,10 @@ def parse_orgao(id_munic: int, headers: dict) -> list:
     """A partir do id da de um município retorna
     o id de todos os Órgãos Expeditores desse município."""
 
-    response_org = requests.get('https://portalbnmp.cnj.jus.br/bnmpportal/api/pesquisa-pecas/orgaos/municipio/' + str(id_munic),
-                                headers=headers)
+    response_org = requests.get(
+        url=f'https://portalbnmp.cnj.jus.br/bnmpportal/api/pesquisa-pecas/orgaos/municipio/{id_munic}',
+        headers=headers
+    )
     org_list = response_org.json()
     ids_list = []
     for e in org_list:
