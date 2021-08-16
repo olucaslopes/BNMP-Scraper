@@ -1,8 +1,8 @@
 import collections
 import requests
+from utils.envVars import *
 
-
-def parse_municipios(id_uf: int, headers: dict) -> list:
+def parse_municipios(id_uf: int) -> list:
     """A partir do id da de uma UF retorna
     o id de  todos dos municípios dessa UF."""
 
@@ -17,7 +17,7 @@ def parse_municipios(id_uf: int, headers: dict) -> list:
     return ids_list
 
 
-def parse_orgao(id_munic: int, headers: dict) -> list:
+def parse_orgao(id_munic: int) -> list:
     """A partir do id da de um município retorna
     o id de todos os Órgãos Expeditores desse município."""
 
@@ -32,7 +32,8 @@ def parse_orgao(id_munic: int, headers: dict) -> list:
     return ids_list
 
 
-def pega_conteudo_completo(linha: dict, headers: dict):
+def pega_conteudo_completo(linha: dict):
+    headers['user-agent'] = ua.random
     id_mandado = linha.get("id")
     id_tipo_peca = linha.get("idTipoPeca")
 
