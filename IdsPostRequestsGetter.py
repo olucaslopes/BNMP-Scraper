@@ -1,5 +1,5 @@
 from utils.utils import *
-from tqdm import tqdm
+import concurrent.futures
 import requests
 import time
 import csv
@@ -11,7 +11,7 @@ with open('data_BNMP.tsv', 'w', newline='', encoding="utf-8") as tsvfile:
     writer.writeheader()
 
 erros = 0
-for id_estado in range(1, 2):
+for id_estado in range(1, 28):
     page_number = 0
     last_page = 1
     while page_number < last_page:
@@ -42,12 +42,10 @@ for id_estado in range(1, 2):
             if last_page < 6:
                 with open('data_BNMP.tsv', 'a+', newline='', encoding="utf-8") as tsvfile:
                     writer = csv.DictWriter(tsvfile, fieldnames=fieldnames, delimiter='\t', extrasaction='ignore')
-                    conteudos_completos = list()
-                    for e in tqdm(row_data["content"]):
-                        conteudo_completo = pega_conteudo_completo(e)
-                        conteudos_completos.append(conteudo_completo)
-
-                    writer.writerows(conteudos_completos)
+                    with concurrent.futures.ThreadPoolExecutor(max_workers=50) as executor:
+                        all_mandados = [mandado for mandado in row_data["content"]]
+                        conteudo_completo = executor.map(pega_conteudo_completo, all_mandados)
+                    writer.writerows(conteudo_completo)
 
                 fim_parse = time.time()
 
@@ -95,9 +93,11 @@ for id_estado in range(1, 2):
                             if last_page < 6:
                                 with open('data_BNMP.tsv', 'a+', newline='', encoding="utf-8") as tsvfile:
                                     writer = csv.DictWriter(tsvfile, fieldnames=fieldnames, delimiter='\t')
-                                    for e in raw_data_munic["content"]:
-                                        conteudo_completo = pega_conteudo_completo(e)
-                                        writer.writerow(conteudo_completo)
+                                    with concurrent.futures.ThreadPoolExecutor(max_workers=50) as executor:
+                                        all_mandados = [mandado for mandado in raw_data_munic["content"]]
+                                        conteudo_completo = executor.map(pega_conteudo_completo, all_mandados)
+                                    writer.writerows(conteudo_completo)
+
                                 fim_parse = time.time()
 
                                 print(f"Tempo para acesso e parse: {fim_parse - inicio_acesso:.2f} segundos.")
@@ -146,9 +146,14 @@ for id_estado in range(1, 2):
                                                           encoding="utf-8") as tsvfile:
                                                     writer = csv.DictWriter(tsvfile, fieldnames=fieldnames,
                                                                             delimiter='\t')
-                                                    for e in raw_data_org["content"]:
-                                                        conteudo_completo = pega_conteudo_completo(e)
-                                                        writer.writerow(conteudo_completo)
+                                                    with concurrent.futures.ThreadPoolExecutor(
+                                                            max_workers=50) as executor:
+                                                        all_mandados = [mandado for mandado in
+                                                                        raw_data_org["content"]]
+                                                        conteudo_completo = executor.map(pega_conteudo_completo,
+                                                                                         all_mandados)
+                                                    writer.writerows(conteudo_completo)
+
                                             fim_parse = time.time()
 
                                             print(
