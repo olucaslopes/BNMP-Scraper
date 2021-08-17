@@ -50,8 +50,8 @@ for id_estado in range(1, 28):
                 fim_parse = time.time()
 
                 print(f"Tempo para acesso e parse: {fim_parse - inicio_acesso:.2f} segundos.")
-                print(f"Acesso: {fim_acesso - inicio_acesso:.2f} segundos.")
-                print(f"Parse: {fim_parse - inicio_parse:.2f} segundos.")
+                print(f"Acesso POST: {fim_acesso - inicio_acesso:.2f} segundos.")
+                print(f"Acesso GET e Parse: {fim_parse - inicio_parse:.2f} segundos.")
 
                 page_number += 1
             else:
@@ -84,7 +84,7 @@ for id_estado in range(1, 28):
                             data=data
                         )
                         fim_acesso = time.time()
-                        if response_munic.status_code == 200:
+                        if response_munic.ok:
                             inicio_parse = time.time()
                             raw_data_munic = response_munic.json()
 
@@ -92,7 +92,8 @@ for id_estado in range(1, 28):
 
                             if last_page < 6:
                                 with open('data_BNMP.tsv', 'a+', newline='', encoding="utf-8") as tsvfile:
-                                    writer = csv.DictWriter(tsvfile, fieldnames=fieldnames, delimiter='\t')
+                                    writer = csv.DictWriter(tsvfile, fieldnames=fieldnames, delimiter='\t',
+                                                            extrasaction='ignore')
                                     with concurrent.futures.ThreadPoolExecutor(max_workers=50) as executor:
                                         all_mandados = [mandado for mandado in raw_data_munic["content"]]
                                         conteudo_completo = executor.map(pega_conteudo_completo, all_mandados)
@@ -101,8 +102,8 @@ for id_estado in range(1, 28):
                                 fim_parse = time.time()
 
                                 print(f"Tempo para acesso e parse: {fim_parse - inicio_acesso:.2f} segundos.")
-                                print(f"Acesso: {fim_acesso - inicio_acesso:.2f} segundos.")
-                                print(f"Parse: {fim_parse - inicio_parse:.2f} segundos.")
+                                print(f"Acesso POST: {fim_acesso - inicio_acesso:.2f} segundos.")
+                                print(f"Acesso GET e Parse: {fim_parse - inicio_parse:.2f} segundos.")
 
                                 page_number += 1
                             else:
@@ -135,7 +136,7 @@ for id_estado in range(1, 28):
                                         )
                                         fim_acesso = time.time()
 
-                                        if response_org.status_code == 200:
+                                        if response_org.ok:
                                             inicio_parse = time.time()
                                             raw_data_org = response_org.json()
 
@@ -145,7 +146,7 @@ for id_estado in range(1, 28):
                                                 with open('data_BNMP.tsv', 'a+', newline='',
                                                           encoding="utf-8") as tsvfile:
                                                     writer = csv.DictWriter(tsvfile, fieldnames=fieldnames,
-                                                                            delimiter='\t')
+                                                                            delimiter='\t', extrasaction='ignore')
                                                     with concurrent.futures.ThreadPoolExecutor(
                                                             max_workers=50) as executor:
                                                         all_mandados = [mandado for mandado in
@@ -158,8 +159,8 @@ for id_estado in range(1, 28):
 
                                             print(
                                                 f"Tempo para acesso e parse: {fim_parse - inicio_acesso:.2f} segundos.")
-                                            print(f"Acesso: {fim_acesso - inicio_acesso:.2f} segundos.")
-                                            print(f"Parse: {fim_parse - inicio_parse:.2f} segundos.")
+                                            print(f"Acesso POST: {fim_acesso - inicio_acesso:.2f} segundos.")
+                                            print(f"Acesso GET e Parse: {fim_parse - inicio_parse:.2f} segundos.")
 
                                             page_number += 1
                                         else:
@@ -170,8 +171,7 @@ for id_estado in range(1, 28):
                                             break
                         else:
                             print(f"Deu ruim! Status code: {response_munic.status_code}")
-                            print("Você está olhando pros Municípios",
-                                  f"<{id_estado}:{id_municipio}>")
+                            print("Você está olhando pros Municípios", f"<{id_estado}:{id_municipio}>")
                             erros += 1
                             break
         else:
