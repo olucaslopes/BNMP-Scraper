@@ -2,6 +2,7 @@ import collections
 import requests
 from utils.envVars import *
 
+
 def parse_municipios(id_uf: int) -> list:
     """A partir do id da de uma UF retorna
     o id de  todos dos municípios dessa UF."""
@@ -32,7 +33,11 @@ def parse_orgao(id_munic: int) -> list:
     return ids_list
 
 
-def pega_conteudo_completo(linha: dict):
+def pega_conteudo_completo(linha: dict) -> dict:
+    """
+    "Entra" em cada um dos mandados com o
+    método GET para pegar mais informações.
+    """
     headers['user-agent'] = ua.random
     id_mandado = linha.get("id")
     id_tipo_peca = linha.get("idTipoPeca")
@@ -45,6 +50,7 @@ def pega_conteudo_completo(linha: dict):
 
 
 def flatten(d, parent_key='', sep='_'):
+    """Planifica dicionários aninhados."""
     items = []
     for k, v in d.items():
         new_key = parent_key + sep + k if parent_key else k
