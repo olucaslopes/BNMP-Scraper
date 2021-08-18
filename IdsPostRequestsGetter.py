@@ -45,7 +45,8 @@ for id_estado in range(1, 28):
                     with concurrent.futures.ThreadPoolExecutor(max_workers=50) as executor:
                         all_mandados = [mandado for mandado in row_data["content"]]
                         conteudo_completo = executor.map(pega_conteudo_completo, all_mandados)
-                    writer.writerows(conteudo_completo)
+                    # Remove os mandados que tiveram erros(==NoneType)
+                    writer.writerows([mandado for mandado in conteudo_completo if mandado])
 
                 fim_parse = time.time()
 
@@ -97,7 +98,8 @@ for id_estado in range(1, 28):
                                     with concurrent.futures.ThreadPoolExecutor(max_workers=50) as executor:
                                         all_mandados = [mandado for mandado in raw_data_munic["content"]]
                                         conteudo_completo = executor.map(pega_conteudo_completo, all_mandados)
-                                    writer.writerows(conteudo_completo)
+                                    # Remove os mandados que tiveram erros(==NoneType)
+                                    writer.writerows([mandado for mandado in conteudo_completo if mandado])
 
                                 fim_parse = time.time()
 
@@ -153,7 +155,8 @@ for id_estado in range(1, 28):
                                                                         raw_data_org["content"]]
                                                         conteudo_completo = executor.map(pega_conteudo_completo,
                                                                                          all_mandados)
-                                                    writer.writerows(conteudo_completo)
+                                                    # Remove os mandados que tiveram erros(==NoneType)
+                                                    writer.writerows([mandado for mandado in conteudo_completo if mandado])
 
                                             fim_parse = time.time()
 
