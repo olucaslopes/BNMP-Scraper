@@ -45,8 +45,10 @@ def pega_conteudo_completo(linha: dict) -> dict:
     response = requests.get(
         url=f'https://portalbnmp.cnj.jus.br/bnmpportal/api/certidaos/{id_mandado}/{id_tipo_peca}',
         headers=headers
-    ).json()
-    return flatten(response)
+    )
+    if response.ok:
+        response_dict = response.json()
+        return flatten(response_dict)
 
 
 def flatten(d, parent_key='', sep='_'):
