@@ -2,6 +2,7 @@ import collections
 import requests
 from utils.envVars import *
 import concurrent.futures
+from tqdm import tqdm
 
 
 def parse_municipios(id_uf: int) -> list:
@@ -125,8 +126,8 @@ def obter_post_poucos_mandados(response_pag1: tuple[dict, int, int, int]) -> lis
     """
     Obtém até 10.000 linhas de dados.
     Retorna uma lista de dicts
-    :param args: raw_data, id_estado, id_municipio, id_orgao
-    :return:
+    :param response_pag1: raw_data, id_estado, id_municipio, id_orgao
+    :return: list: lista de dicionários de mandados
     """
     raw_data, id_estado, id_municipio, id_orgao = response_pag1[0], response_pag1[1], response_pag1[2], response_pag1[3]
     data = post_obter_data(id_estado, id_municipio, id_orgao)
@@ -197,3 +198,49 @@ def filtrar_resposta(lista_primeiras_paginas):
         else:
             muitos_mandados.append(mandados_dict)
     return poucos_mandados, medio_mandados, muitos_mandados
+
+
+def obter_informacoes_iniciais(id_estados: list, id_municipios: list = None, id_orgaos: list = None) -> tuple:
+    """
+    Faz um POST request de todas as primeiras páginas de todos os estados
+    e filtra as respostas para cada devida categoria. Retorna um tuple
+    :param id_estados: lista de ints, cada um é um id que pertence ao intervalo [1,27].
+    :param id_municipios: lista de ints, cada um é um id.
+    :param id_orgaos: lista de ints, cada um é um id.
+    :return: tuple: poucos_mandados, medio_mandados, muitos_mandados
+    """
+    executor = concurrent.futures.ThreadPoolExecutor(max_workers=50)
+    print("Recuperando informações iniciais...")
+    if not id_municipios and not id_orgaos:
+        # Só tem estado!
+        primeiras_paginas = list(tqdm(executor.map(obter_post_pag1, id_estados), total=len(id_estados)))
+        return filtrar_resposta(primeiras_paginas)
+    elif not id_orgaos:
+        # Tem estado e id_municipio!
+        primeiras_paginas = list(tqdm(executor.map(obter_post_pag1, id_municipios), total=len(id_municipios)))
+        return filtrar_resposta(primeiras_paginas)
+    else:
+        # Tem estado, municipio e orgao!
+        primeiras_paginas = list(tqdm(executor.map(obter_post_pag1, id_orgaos), total=len(id_orgaos)))
+        return filtrar_resposta(primeiras_paginas)
+
+def pegar_mandados_completos(poucos_mandados: list, medio_mandados) -> list:
+    executor = concurrent.futures.ThreadPoolExecutor(max_workers=50)
+    print("Acessando estados com poucos mandados...")
+    # Pega os JSONs das páginas que tem poucos mandados
+    poucos_mandados_parseado = executor.map(obter_post_poucos_mandados, poucos_mandados)
+
+    print("Acessando estados com mais mandados...")
+    # Pega JSONs das páginas que tem um número médio de mandados
+    medio_mandados_parseado = executor.map(obter_post_expandido, medio_mandados)
+
+    # Adicionando listas e planificando all_mandados
+    all_madados = [*poucos_mandados_parseado, *medio_mandados_parseado]
+    all_madados = [item for sublist in all_madados for item in sublist]
+    return all_madados
+
+
+def salvar_jsons(lista_mandados: list):
+    executor = concurrent.futures.ThreadPoolExecutor(max_workers=100)
+    print("Salvando JSONs...")
+    list(tqdm(executor.map(pega_conteudo_completo, lista_mandados), total=len(lista_mandados)))
