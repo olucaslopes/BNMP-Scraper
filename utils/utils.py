@@ -20,7 +20,7 @@ def pega_ids_municipios(id_uf: int) -> list:
     return ids_list
 
 
-def parse_orgao(id_munic: int) -> list:
+def pega_ids_orgaos(id_munic: int) -> list:
     """A partir do id da de um município retorna
     o id de todos os Órgãos Expeditores desse município."""
 

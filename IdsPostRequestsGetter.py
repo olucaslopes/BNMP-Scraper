@@ -109,7 +109,7 @@ for id_estado in range(1, 28):
 
                                 page_number += 1
                             else:
-                                id_orgaos = parse_orgao(id_municipio)
+                                id_orgaos = pega_ids_orgaos(id_municipio)
                                 tot_orgaos = len(id_orgaos)
                                 for id_orgao in id_orgaos:
                                     page_number = 0
