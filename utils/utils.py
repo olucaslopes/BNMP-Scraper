@@ -5,7 +5,7 @@ import concurrent.futures
 from tqdm import tqdm
 
 
-def parse_municipios(id_uf: int) -> list:
+def pega_ids_municipios(id_uf: int) -> list:
     """A partir do id da de uma UF retorna
     o id de  todos dos municípios dessa UF."""
 
@@ -223,6 +223,7 @@ def obter_informacoes_iniciais(id_estados: list, id_municipios: list = None, id_
         # Tem estado, municipio e orgao!
         primeiras_paginas = list(tqdm(executor.map(obter_post_pag1, id_orgaos), total=len(id_orgaos)))
         return filtrar_resposta(primeiras_paginas)
+
 
 def pegar_mandados_completos(poucos_mandados: list, medio_mandados) -> list:
     executor = concurrent.futures.ThreadPoolExecutor(max_workers=50)

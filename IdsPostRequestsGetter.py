@@ -56,7 +56,7 @@ for id_estado in range(1, 28):
 
                 page_number += 1
             else:
-                id_municipios = parse_municipios(id_estado)
+                id_municipios = pega_ids_municipios(id_estado)[1]
                 tot_municipios = len(id_municipios)
                 munic_cont = 0
                 for id_municipio in id_municipios:
