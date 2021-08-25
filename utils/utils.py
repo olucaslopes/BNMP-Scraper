@@ -119,7 +119,7 @@ def obter_post(params, data):
     if response.ok:
         return response.json()
     else:
-        print("Deu Ruim!")
+        print(f"Deu Ruim! POST request não bem sucedida. Status code:{response.status_code}")
 
 
 def obter_post_poucos_mandados(response_pag1: tuple[dict, int, int, int]) -> list:
