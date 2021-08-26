@@ -5,10 +5,11 @@ import concurrent.futures
 from tqdm import tqdm
 
 
-def pega_ids_municipios(id_uf: int) -> list:
-    """A partir do id da de uma UF retorna
-    o id de  todos dos municípios dessa UF."""
-
+def pega_ids_municipios(id_uf: int) -> tuple:
+    """
+    A partir do id da de uma UF retorna a própria
+    id e o id de  todos dos municípios dessa UF.
+     """
     response_munic = requests.get(
         url=f'https://portalbnmp.cnj.jus.br/scaservice/api/municipios/por-uf/{id_uf}',
         headers=headers
@@ -17,7 +18,7 @@ def pega_ids_municipios(id_uf: int) -> list:
     ids_list = []
     for e in munic_list:
         ids_list.append(e['id'])
-    return ids_list
+    return [id_uf for _ in range(len(ids_list))], ids_list
 
 
 def pega_ids_orgaos(id_munic: int) -> list:
