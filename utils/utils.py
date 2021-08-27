@@ -268,3 +268,23 @@ def salvar_jsons(lista_mandados: list):
     executor = concurrent.futures.ThreadPoolExecutor(max_workers=100)
     print("Salvando JSONs...")
     list(tqdm(executor.map(pega_conteudo_completo, lista_mandados), total=len(lista_mandados)))
+
+
+def obter_informacoes_municicipios(mandados_estados: list) -> tuple[list, list]:
+    """
+    A partir de uma lista de mandados retorna uma tupla
+    de ids de ufs com seus respectivos ids de municipios.
+    """
+    with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+        tuplas_ids = list(executor.map(pega_ids_municipios, mandados_estados))
+    return [e[0] for e in tuplas_ids], [e[1] for e in tuplas_ids]  # lista ids_estado, lista ids_munic separados
+
+
+def obter_informacoes_orgaos(mandados_estados: list) -> tuple[list, list, list]:
+    """
+    A partir de uma lista de mandados retorna uma tupla
+    de ids de ufs com seus respectivos ids de orgãos expeditores.
+    """
+    with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+        tupla_ids = list(executor.map(pega_ids_orgaos, mandados_estados))
+    return [e[0] for e in tupla_ids], [e[1] for e in tupla_ids], [e[2] for e in tupla_ids]
