@@ -1,4 +1,3 @@
-import collections
 import requests
 from utils.envVars import *
 import concurrent.futures
@@ -60,18 +59,6 @@ def pega_conteudo_completo(linha: dict):
         # print(f"Deu ruim! Status code: {response.status_code}")
         # print("Você está olhando pro pega_conteudo_completo")
         pass
-
-
-def flatten(d, parent_key='', sep='_'):
-    """Planifica dicionários aninhados."""
-    items = []
-    for k, v in d.items():
-        new_key = parent_key + sep + k if parent_key else k
-        if isinstance(v, collections.MutableMapping):
-            items.extend(flatten(v, new_key, sep=sep).items())
-        else:
-            items.append((new_key, v))
-    return dict(items)
 
 
 def post_obter_data(id_estado: int, id_municipio: int = "", id_orgao: int = "") -> str:
