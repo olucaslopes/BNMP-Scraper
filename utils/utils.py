@@ -273,6 +273,11 @@ def pegar_mandados_completos(poucos_mandados: list, medio_mandados) -> list:
 
 
 def salvar_jsons(lista_mandados: list):
+    """
+    Dada uma lista de mandados, utiliza concorrência
+    para salvar cada mandado em um arquivo JSON de
+    maneira mais eficiente.
+    """
     executor = concurrent.futures.ThreadPoolExecutor(max_workers=100)
     print("Salvando JSONs...")
     list(tqdm(executor.map(pega_conteudo_completo, lista_mandados), total=len(lista_mandados)))
