@@ -22,19 +22,20 @@ def pega_ids_municipios(tupla_mandado: tuple) -> tuple:
     return [id_uf for _ in range(len(ids_municipios))], ids_municipios
 
 
-def pega_ids_orgaos(id_munic: int) -> list:
+def pega_ids_orgaos(tupla_mandado: tuple) -> tuple:
     """A partir do id da de um município retorna
     o id de todos os Órgãos Expeditores desse município."""
-
+    id_munic = tupla_mandado[2]
     response_org = requests.get(
         url=f'https://portalbnmp.cnj.jus.br/bnmpportal/api/pesquisa-pecas/orgaos/municipio/{id_munic}',
         headers=headers
     )
     org_list = response_org.json()
-    ids_list = []
+    ids_orgaos = []
     for e in org_list:
-        ids_list.append(e['id'])
-    return ids_list
+        ids_orgaos.append(e['id'])
+    # retorna lista ids_estado, ids_munic, ids_org
+    return [tupla_mandado[1] for _ in range(len(ids_orgaos))], [id_munic for _ in range(len(ids_orgaos))], ids_orgaos
 
 
 def pega_conteudo_completo(linha: dict):
