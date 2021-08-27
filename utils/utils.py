@@ -230,15 +230,27 @@ def obter_informacoes_iniciais(id_estados: list, id_municipios: list = None, id_
     print("Recuperando informações iniciais...")
     if not id_municipios and not id_orgaos:
         # Só tem estado!
-        primeiras_paginas = list(tqdm(executor.map(obter_post_pag1, id_estados), total=len(id_estados)))
+        primeiras_paginas = list(tqdm(executor.map(obter_post_pag1, id_estados),
+                                      total=len(id_estados)))
         return filtrar_resposta(primeiras_paginas)
     elif not id_orgaos:
-        # Tem estado e id_municipio!
-        primeiras_paginas = list(tqdm(executor.map(obter_post_pag1, id_municipios), total=len(id_municipios)))
+        # Tem estado e municipio!
+        primeiras_paginas = list()
+        for index_estado in range(len(id_estados)):
+            primeiras_paginas.extend(list(tqdm(executor.map(obter_post_pag1,  # Obtém primeiras páginas de cada
+                                                            id_estados[index_estado],  # município de cada estado.
+                                                            id_municipios[index_estado]),
+                                               total=len(id_municipios[index_estado]))))
         return filtrar_resposta(primeiras_paginas)
     else:
         # Tem estado, municipio e orgao!
-        primeiras_paginas = list(tqdm(executor.map(obter_post_pag1, id_orgaos), total=len(id_orgaos)))
+        primeiras_paginas = list()
+        for index_municipio in range(len(id_estados)):
+            primeiras_paginas.extend(list(tqdm(executor.map(obter_post_pag1,  # Obtém primeiras páginas de cada órgão
+                                                            id_estados[index_municipio],  # expedidor de cada municipio.
+                                                            id_municipios[index_municipio],
+                                                            id_orgaos[index_municipio]),
+                                               total=len(id_orgaos[index_municipio]))))
         return filtrar_resposta(primeiras_paginas)
 
 
