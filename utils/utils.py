@@ -179,6 +179,13 @@ def obter_post_expandido(response_pag1: tuple[dict, int, int, int]) -> list:
 
 
 def obter_post_forcabruta(id_estado: int, id_municipio: int, id_orgao: int) -> list:
+    """
+    Aplica todas as ordenações disponíveis para
+    obter o maior número de mandados possíveis,
+    mesmo sem conseguir acessar todas as páginas
+    do Banco de Dados.
+    Retorna uma lista com todos os mandados adquiridos.
+    """
     data = '{"buscaOrgaoRecursivo":false,"orgaoExpeditor":{"id":' + str(id_orgao) + '},"idEstado":' + str(
             id_estado) + ',"idMunicipio":' + str(id_municipio) + '}'
     data = [data for _ in range(len(params_forca_bruta))]
@@ -193,6 +200,12 @@ def obter_post_forcabruta(id_estado: int, id_municipio: int, id_orgao: int) -> l
 
 
 def filtrar_resposta(lista_primeiras_paginas):
+    """
+    Separa os mandados de uma lista de primeiras
+    requisições em 3 listas de acordo com o número
+    de mandados a serem obtidos nas requisições seguintes.
+    Retorna um tuple com 3 elementos parseados.
+    """
     poucos_mandados, medio_mandados, muitos_mandados = list(), list(), list()
     for tuple_mandado in lista_primeiras_paginas:
         if tuple_mandado[0]['totalElements'] <= 10000:
