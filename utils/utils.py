@@ -252,12 +252,17 @@ def obter_informacoes_iniciais(id_estados: list, id_municipios: list = None, id_
 
 
 def pegar_mandados_completos(poucos_mandados: list, medio_mandados) -> list:
+    """
+    Pega duas listas já parseadas de primeiras
+    requisições e faz suas requisições seguintes
+    adequadamente de acordo com seu tamanho.
+    """
     executor = concurrent.futures.ThreadPoolExecutor(max_workers=50)
-    print("Acessando estados com poucos mandados...")
+    print("Acessando unidades com poucos mandados...")
     # Pega os JSONs das páginas que tem poucos mandados
     poucos_mandados_parseado = executor.map(obter_post_poucos_mandados, poucos_mandados)
 
-    print("Acessando estados com mais mandados...")
+    print("Acessando unidades com mais mandados...")
     # Pega JSONs das páginas que tem um número médio de mandados
     medio_mandados_parseado = executor.map(obter_post_expandido, medio_mandados)
 
