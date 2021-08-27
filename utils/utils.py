@@ -137,8 +137,6 @@ def obter_post_poucos_mandados(response_pag1: tuple[dict, int, int, int]) -> lis
     data = post_obter_data(id_estado, id_municipio, id_orgao)
     all_mandados = list()
     all_mandados.extend(raw_data['content'])
-    total_pages = raw_data['totalPages']
-    total_elements = raw_data['numberOfElements']
     params = tuple((('page', str(x)), ('size', '2000'), ('sort', 'dataExpedicao,ASC')) for x in range(1, 5))
     with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
         novos_mandados = executor.map(obter_post, params, tuple(data for _ in range(len(params))))
@@ -157,7 +155,6 @@ def obter_post_expandido(response_pag1: tuple[dict, int, int, int]) -> list:
     data = post_obter_data(id_estado, id_municipio, id_orgao)
     all_mandados = list()
     all_mandados.extend(raw_data['content'])
-    total_pages = raw_data['totalPages']
     total_elements = raw_data['numberOfElements']
     params = tuple((('page', str(x)), ('size', '2000'), ('sort', 'dataExpedicao,ASC')) for x in range(1, 5))
     with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
