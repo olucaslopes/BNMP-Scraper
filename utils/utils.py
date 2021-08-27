@@ -194,13 +194,13 @@ def obter_post_forcabruta(id_estado: int, id_municipio: int, id_orgao: int) -> l
 
 def filtrar_resposta(lista_primeiras_paginas):
     poucos_mandados, medio_mandados, muitos_mandados = list(), list(), list()
-    for mandados_dict in lista_primeiras_paginas:
-        if mandados_dict[0]['totalElements'] <= 10000:
-            poucos_mandados.append(mandados_dict)
-        elif mandados_dict[0]['totalElements'] <= 20000:
-            medio_mandados.append(mandados_dict)
+    for tuple_mandado in lista_primeiras_paginas:
+        if tuple_mandado[0]['totalElements'] <= 10000:
+            poucos_mandados.append(tuple_mandado)
+        elif tuple_mandado[0]['totalElements'] <= 20000:
+            medio_mandados.append(tuple_mandado)
         else:
-            muitos_mandados.append(mandados_dict)
+            muitos_mandados.append(tuple_mandado)
     return poucos_mandados, medio_mandados, muitos_mandados
 
 
