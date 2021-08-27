@@ -54,11 +54,12 @@ def pega_conteudo_completo(linha: dict):
     )
     if response.ok:
         response_dict = response.json()
-        with open(f"json/{response_dict['id']}.json", 'wb') as outf:
+        with open(f"jsons/{response_dict['id']}.json", 'wb') as outf:
             outf.write(response.content)
     else:
-        print(f"Deu ruim! Status code: {response.status_code}")
-        print("Você está olhando pro pega_conteudo_completo")
+        # print(f"Deu ruim! Status code: {response.status_code}")
+        # print("Você está olhando pro pega_conteudo_completo")
+        pass
 
 
 def flatten(d, parent_key='', sep='_'):
