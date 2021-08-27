@@ -186,7 +186,7 @@ def obter_post_forcabruta(id_estado: int, id_municipio: int, id_orgao: int) -> l
     all_mandados = list()
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=50) as executor:
-        novos_mandados = executor.map(obter_post, params_forca_bruta, data)
+        novos_mandados = list(tqdm(executor.map(obter_post, params_forca_bruta, data), total=len(params_forca_bruta)))
     for lista_mandados in [x['content'] for x in novos_mandados if x]:
         all_mandados.extend([mandado for mandado in lista_mandados if mandado not in all_mandados])
     return all_mandados
