@@ -37,7 +37,7 @@ Por exemplo, apesar dos dados serem públicos, não é possível baixa-los compl
 <!-- OBJETIVO -->
 ### Objetivo
 
-Nosso programa navega diretamente na API do Portal BNMP para coletar os mandados em sua totalidade, disponibilizando-os em uma pasta de arquivos jsons para qualquer um que queira analisa-los.
+Nosso programa navega diretamente na API do Portal BNMP para coletar os mandados em sua totalidade, disponibilizando-os em uma pasta de arquivos jsons para qualquer um que queira analisar-los.
 
 
 <!-- COMO FUNCIONA -->
@@ -50,7 +50,7 @@ Nosso programa navega diretamente na API do Portal BNMP para coletar os mandados
 ### Principais desafios
 
 1. O banco de dados do portal possui um limite para o número máximo de mandados retornadas por requisição (2000 mandados por requisição do tipo POST)
-2. O banco banco de dados do portal também limita o número máximo de páginas de mandados disponíveis para acesso por id (para requisições de 2000 mandados, o limite é de 5 páginas - o portal limita o acesso aos 10.000 primeiros mandados)
+2. O banco de dados do portal também limita o número máximo de páginas de mandados disponíveis para acesso por id (para requisições de 2000 mandados, o limite é de 5 páginas - o portal limita o acesso aos 10.000 primeiros mandados)
 
 <!-- MELHORES INSIGHTS -->
 ### Melhores insights
@@ -62,7 +62,7 @@ Nosso programa navega diretamente na API do Portal BNMP para coletar os mandados
 
 2. Conseguimos aumentar o limite de páginas de informações que podem ser alcançadas de 5 para 10 páginas alterando a ordenação dos elementos(fazendo requisições com a ordenação ascendente e pegando as primeiras 5 páginas e depois descendente pegando também as primeiras 5 páginas)
 
-3. Por fim, para órgãos expedidores com mais de 10 páginas de mandados nós desenvolvemos uma função que aproveita as mais diferentes formas de ordenação para, por força burta, pegar o maior número de mandados possível daquele órgão.
+3. Por fim, para órgãos expedidores com mais de 10 páginas de mandados nós desenvolvemos uma função que aproveita as mais diferentes formas de ordenação para, por força bruta, pegar o maior número de mandados possível daquele órgão.
 
 <!-- INSTALAÇÃO -->
 ## Instalação
@@ -81,7 +81,7 @@ Esse projeto utiliza algumas bibliotecas não-nativas do Python que podem ser in
 <!-- IMPORTANTE -->
 ### **Importante**
   
-Como o Portal BNMP requer que passemos por um captcha antes de acessar o site, para que esse programa funcione você precisa antes acessar o portal, passar pelo captcha e colar um cookie válido(e não expirado) em utils/envVars.py seguindo o passo-a-passo abaixo.
+Como o Portal BNMP requer que passemos por um captcha antes de acessar o site, para que esse programa funcione você precisa antes acessar o portal, passar pelo captcha e colar um cookie válido(e não expirado) em bnmp_scraper/settings.py seguindo o passo-a-passo abaixo.
 
   
 1) Acesse https://portalbnmp.cnj.jus.br/#/pesquisa-peca e passe pelo captcha
@@ -98,8 +98,8 @@ Como o Portal BNMP requer que passemos por um captcha antes de acessar o site, p
 
 7) Dentro do "Cabeçalho da requisição" procure por um valor chamado "cookie", clique com o botão direito e copie esse valor
 
-8) Agora dentro do diretório do programa, entre na pasta utils e em seguida abra o arquivo 'envVars&#46;py'
+8) Agora dentro do diretório do programa, entre na pasta bnmp_scraper e em seguida abra o arquivo 'settings&#46;py'
 
-9) Na linha 29 você deve encontrar uma variável chamada "cookie" já atribuída a uma string, apague ela e cole esse valor que você copiou (não esqueça de colar "entre aspas")
+9) Você deve encontrar uma variável chamada "cookie" já atribuída a uma string, apague ela e cole esse valor que você copiou (não esqueça de colar "entre aspas")
 
-10) Pronto, agora o programa está pronto pra funcionar :). Só é preciso rodar o arquivo 'JsonsGetter&#46;py'
+10) Pronto, agora o programa está pronto pra funcionar :). 

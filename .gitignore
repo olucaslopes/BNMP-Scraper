@@ -140,3 +140,6 @@ cython_debug/
 
 # JSONs storage directory
 json/
+
+# IDE storage directory
+.idea/
