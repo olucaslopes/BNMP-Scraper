@@ -1,18 +1,20 @@
 import requests
 from .settings import *
-from .utils import obter_post_pag1, request_post_poucos_mandados, request_post_expandido, \
-    request_post_forcabruta, baixar_conteudo_completo_parallel
+# from .utils import obter_post_pag1, request_post_poucos_mandados, request_post_expandido, \
+#     request_post_forcabruta, baixar_conteudo_completo_parallel
 from .errors import MandadosNotFoundError, EstadoNotFoundError
 import concurrent.futures
 from tqdm import tqdm
+from .filtro import Filtro
+# from extrator import Extrator
 
 
-class Estado:
-    def __init__(self, id_estado: [int, str]):
+class Estado(Filtro):
+    def __init__(self, headers, id_estado: [int, str]):
+        super().__init__(headers)
         self._id = self._set_id(id_estado)
-        self._init_info = obter_post_pag1(self._id)
+        self._init_info = self._obter_post_pag1(self._id)
         self._totalElements = self._init_info['totalElements']
-        self._mandados_list = []
         self._munic_info = {}
         self._munic_objs = []
 
@@ -21,10 +23,10 @@ class Estado:
             return self._mandados_list
         if self._totalElements <= 20000:
             if self._totalElements <= 10000:
-                mandados_parciais = request_post_poucos_mandados(self._init_info, self._id)
+                mandados_parciais = self._request_post_poucos_mandados(self._init_info, self._id)
             else:
-                mandados_parciais = request_post_expandido(self._init_info, self._id)
-            self._mandados_list = baixar_conteudo_completo_parallel(mandados_parciais)
+                mandados_parciais = self._request_post_expandido(self._init_info, self._id)
+            self._mandados_list = self._baixar_conteudo_completo_parallel(mandados_parciais)
         else:
             municips = self._gerar_municipios()
             executor = concurrent.futures.ThreadPoolExecutor(max_workers=32)
@@ -37,11 +39,6 @@ class Estado:
         Retorna uma lista de ids dos municipios dessa uf.
         """
         return list(self._baixar_municipios().keys())
-
-    def obter_mandados(self) -> list:
-        if not self._mandados_list:
-            raise MandadosNotFoundError("Você ainda não baixou os mandados. Utilize .baixar_mandados() para baixa-los")
-        return self._mandados_list.copy()
 
     def _baixar_municipios(self, force: bool = False) -> dict:
         """
@@ -68,7 +65,9 @@ class Estado:
             return self._munic_objs
         executor = concurrent.futures.ThreadPoolExecutor(max_workers=32)
         munics_ids = list(self._baixar_municipios().values())  # Pega os ids dos municípios
-        munic = list(executor.map(lambda munic_id: Municipio(self._id, munic_id), munics_ids))  # Cria as instâncias
+        munic = list(executor.map(
+            lambda munic_id: Municipio(self._headers, self._id, munic_id), munics_ids
+        ))  # Cria as instâncias
         self._munic_objs = [m for m in munic if len(m) > 0]
         return self._munic_objs  # retorna somente os municípios que tem mandados
 
@@ -96,11 +95,12 @@ class Estado:
     sigla = property(_set_sigla, None)
 
 
-class Municipio:
-    def __init__(self, id_estado: int, id_munic: int):
+class Municipio(Filtro):
+    def __init__(self, headers, id_estado: int, id_munic: int):
+        super().__init__(headers)
         self._id_estado = id_estado
         self._id = id_munic
-        self._init_info = obter_post_pag1(self._id_estado, self._id)
+        self._init_info = self._obter_post_pag1(self._id_estado, self._id)
         self._totalElements = self._init_info['totalElements']
         self._mandados_list = []
         self._orgaos_info = {}
@@ -111,10 +111,10 @@ class Municipio:
             return self._mandados_list
         if self._totalElements <= 20000:
             if self._totalElements <= 10000:
-                mandados_parciais = request_post_poucos_mandados(self._init_info, self._id_estado, self._id)
+                mandados_parciais = self._request_post_poucos_mandados(self._init_info, self._id_estado, self._id)
             else:
-                mandados_parciais = request_post_expandido(self._init_info, self._id_estado, self._id)
-            self._mandados_list = baixar_conteudo_completo_parallel(mandados_parciais)
+                mandados_parciais = self._request_post_expandido(self._init_info, self._id_estado, self._id)
+            self._mandados_list = self._baixar_conteudo_completo_parallel(mandados_parciais)
         else:
             orgaos = self._gerar_orgaos()
             executor = concurrent.futures.ThreadPoolExecutor(max_workers=32)
@@ -157,7 +157,9 @@ class Municipio:
             return self._orgaos_objs
         executor = concurrent.futures.ThreadPoolExecutor(max_workers=32)
         orgaos_ids = list(self._baixar_orgaos().values())  # Pega os ids dos órgãos expedidores
-        org = list(executor.map(lambda org_id: OrgaoExpedidor(self._id_estado, self._id, org_id), orgaos_ids))
+        org = list(executor.map(
+            lambda org_id: OrgaoExpedidor(self._headers, self._id_estado, self._id, org_id), orgaos_ids
+        ))  # Cria as instâncias
         return [o for o in org if len(o) > 0]  # retorna somente os orgaos que tem mandados
 
     def __len__(self):
@@ -169,12 +171,13 @@ class Municipio:
         return self.obter_mandados() + val.obter_mandados()
 
 
-class OrgaoExpedidor:
-    def __init__(self, id_estado, id_munic, id_orgao):
+class OrgaoExpedidor(Filtro):
+    def __init__(self, headers, id_estado, id_munic, id_orgao):
+        super().__init__(headers)
         self._id_estado = id_estado
         self._id_munic = id_munic
         self._id = id_orgao
-        self._init_info = obter_post_pag1(self._id_estado, self._id_munic, self._id)
+        self._init_info = self._obter_post_pag1(self._id_estado, self._id_munic, self._id)
         self._totalElements = self._init_info['totalElements']
         self._mandados_list = []
 
@@ -183,15 +186,17 @@ class OrgaoExpedidor:
             return self._mandados_list
         if self._totalElements <= 20000:
             if self._totalElements <= 10000:
-                mandados_parciais = request_post_poucos_mandados(
+                mandados_parciais = self._request_post_poucos_mandados(
                     self._init_info, self._id_estado, self._id_munic, self._id
                 )
             else:
-                mandados_parciais = request_post_expandido(self._init_info, self._id_estado, self._id_munic, self._id)
-            self._mandados_list = baixar_conteudo_completo_parallel(mandados_parciais)
+                mandados_parciais = self._request_post_expandido(
+                    self._init_info, self._id_estado, self._id_munic, self._id
+                )
+            self._mandados_list = self._baixar_conteudo_completo_parallel(mandados_parciais)
         else:
-            mandados_parciais = request_post_forcabruta(self._id_estado, self._id_munic, self._id)
-            self._mandados_list = baixar_conteudo_completo_parallel(mandados_parciais)
+            mandados_parciais = self._request_post_forcabruta(self._id_estado, self._id_munic, self._id)
+            self._mandados_list = self._baixar_conteudo_completo_parallel(mandados_parciais)
         # print(f"Recuperados {len(self._mandados_list)}/{self._totalElements} mandados")
 
     def obter_mandados(self) -> list:

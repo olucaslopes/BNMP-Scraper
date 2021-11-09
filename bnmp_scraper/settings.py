@@ -1,6 +1,4 @@
-# from fake_useragent import UserAgent
-
-# ua = UserAgent()
+__version__ = "0.0.1"
 
 UF_MAP = {'AC': 1, 'AL': 2, 'AM': 3, 'AP': 4, 'BA': 5, 'CE': 6, 'DF': 7, 'ES': 8, 'GO': 9, 'MA': 10, 'MG': 11, 'MS': 12,
           'MT': 13, 'PA': 14, 'PB': 15, 'PE': 16, 'PI': 17, 'PR': 18, 'RJ': 19, 'RN': 20, 'RO': 21, 'RR': 22, 'RS': 23,
@@ -9,8 +7,6 @@ UF_MAP = {'AC': 1, 'AL': 2, 'AM': 3, 'AP': 4, 'BA': 5, 'CE': 6, 'DF': 7, 'ES': 8
 NUM_MAP = {1: 'AC', 2: 'AL', 3: 'AM', 4: 'AP', 5: 'BA', 6: 'CE', 7: 'DF', 8: 'ES', 9: 'GO', 10: 'MA', 11: 'MG',
            12: 'MS', 13: 'MT', 14: 'PA', 15: 'PB', 16: 'PE', 17: 'PI', 18: 'PR', 19: 'RJ', 20: 'RN', 21: 'RO', 22: 'RR',
            23: 'RS', 24: 'SC', 25: 'SE', 26: 'SP', 27: 'TO'}
-
-COOKIE = "portalbnmp=eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJndWVzdF9wb3J0YWxibm1wIiwiYXV0aCI6IlJPTEVfQU5PTllNT1VTIiwiZXhwIjoxNjM1NTk4NjE2fQ.8D45vvpKqGAxZkkFosVt3Y1kH78wpeFUCGKMOCBFPgSCIEG8pSe-scttwXgj8ZcBsegzy3oNzjsrOdNmlwvT_g"
 
 HEADERS = {
     'authority': 'portalbnmp.cnj.jus.br',
