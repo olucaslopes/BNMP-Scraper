@@ -50,7 +50,7 @@ class Estado(Filtro):
             return self._munic_info
         response_munic = requests.get(
             url=f'https://portalbnmp.cnj.jus.br/scaservice/api/municipios/por-uf/{self._id}',
-            headers=HEADERS
+            headers=self._headers
         )
         munic_list = response_munic.json()
         self._munic_info = {munic['nome']: munic['id'] for munic in munic_list}
@@ -137,7 +137,7 @@ class Municipio(Filtro):
             return self._orgaos_info
         response_org = requests.get(
             url=f'https://portalbnmp.cnj.jus.br/bnmpportal/api/pesquisa-pecas/orgaos/municipio/{self._id}',
-            headers=HEADERS
+            headers=self._headers
         )
         org_list = response_org.json()
         return {org['nome']: org['id'] for org in org_list}

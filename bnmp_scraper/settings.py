@@ -8,20 +8,6 @@ NUM_MAP = {1: 'AC', 2: 'AL', 3: 'AM', 4: 'AP', 5: 'BA', 6: 'CE', 7: 'DF', 8: 'ES
            12: 'MS', 13: 'MT', 14: 'PA', 15: 'PB', 16: 'PE', 17: 'PI', 18: 'PR', 19: 'RJ', 20: 'RN', 21: 'RO', 22: 'RR',
            23: 'RS', 24: 'SC', 25: 'SE', 26: 'SP', 27: 'TO'}
 
-HEADERS = {
-    'authority': 'portalbnmp.cnj.jus.br',
-    'accept': 'application/json',
-    'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_2) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1309.0 Safari/537.17',
-    'content-type': 'application/json;charset=UTF-8',
-    'origin': 'https://portalbnmp.cnj.jus.br',
-    'sec-fetch-site': 'same-origin',
-    'sec-fetch-mode': 'cors',
-    'sec-fetch-dest': 'empty',
-    'referer': 'https://portalbnmp.cnj.jus.br/',
-    'accept-language': 'en-US,en;q=0.9',
-    'cookie': COOKIE,
-}
-
 PARAMS_FORCA_BRUTA = [(('page', '0'), ('size', '2000'), ('sort', 'numeroPeca,ASC')),
                       (('page', '0'), ('size', '2000'), ('sort', 'numeroPeca,DESC')),
                       (('page', '0'), ('size', '2000'), ('sort', 'nomePessoa,ASC')),
