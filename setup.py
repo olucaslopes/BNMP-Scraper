@@ -4,7 +4,7 @@ from pathlib import Path
 
 setup(
     name='bnmp_scraper',
-    version='0.0.1',
+    version='0.0.3',
 
     url='https://github.com/olucaslopes/BNMP-Scraper',
     author='Lucas Lopes',

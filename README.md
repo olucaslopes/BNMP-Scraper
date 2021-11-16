@@ -57,15 +57,15 @@ Como o Portal BNMP requer que passemos por um captcha antes de acessar o site, p
 
 7) Dentro do "Cabeçalho da requisição" procure por um valor chamado "cookie", clique com o botão direito e copie esse valor
 
-8) Pronto, agora você pode usar esse cookie para instanciar nosso Extrator como no exemplo de uso abaixo :).
+8) Pronto, agora você pode usar esse cookie para instanciar nosso extrator como no exemplo de uso abaixo :).
 
 <!-- EXEMPLO DE USO -->
 ## **Exemplo de uso**
 
 ### Criando extrator
   ```
-from bnmp_scraper import Extrator
-extrator = Extrator("seu-cookie-aqui")
+from bnmp_scraper import BnmpScraper
+extrator = BnmpScraper("seu-cookie-aqui")
   ```
 
 ### Raspando Mandados
