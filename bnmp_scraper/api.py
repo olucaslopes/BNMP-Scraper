@@ -81,7 +81,7 @@ class Estado(Filtro):
                 return id_estado
         raise EstadoNotFoundError("id_estado precisa ser a sigla de uma UF ou um número entre 1 e 27")
 
-    def _set_sigla(self):
+    def _get_sigla(self):
         return NUM_MAP[self._id]
 
     def __len__(self):
@@ -92,7 +92,7 @@ class Estado(Filtro):
             raise TypeError("Você só pode somar elementos das classes Estado, Municipio ou OrgaoExpedidor")
         return self.obter_mandados() + val.obter_mandados()
 
-    sigla = property(_set_sigla, None)
+    sigla = property(_get_sigla, None)
 
 
 class Municipio(Filtro):

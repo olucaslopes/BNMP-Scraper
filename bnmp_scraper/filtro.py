@@ -5,6 +5,7 @@ import concurrent.futures
 from itertools import repeat
 from .settings import PARAMS_FORCA_BRUTA
 from tqdm import tqdm
+import warnings
 
 
 class Filtro:
@@ -35,7 +36,10 @@ class Filtro:
         if response.ok:
             return response.json()
         else:
-            print(f"Deu Ruim! POST request não bem sucedida. Status code:{response.status_code}")
+            responsetxt = response.json().get('detail', '')
+            warnings.warn(
+                f"ERROR! POST request não bem sucedida.\nStatus code {response.status_code}: '{responsetxt}'"
+            )
 
     def _obter_data_post(self, id_estado: int, id_municipio: int = "", id_orgao: int = "") -> str:
         """Tem como parâmetros os ids em questão.
@@ -141,7 +145,7 @@ class Filtro:
         e salva-nas em json/<id_mandado>.json
         """
         if not isinstance(linha, dict):
-            print(f"ERROR: Mandado is {type(linha)}")
+            warnings.warn(f"ERROR! Mandado should be a dict, not a {type(linha)}")
             return None
         # HEADERS['user-agent'] = ua.random
         id_mandado = linha.get("id")
@@ -158,9 +162,10 @@ class Filtro:
             # with open(f"jsons/{response_dict['id']}.json", 'wb') as outf:
             #     outf.write(response.content)
         else:
-            print(f"Deu ruim! Status code: {response.status_code}")
-            # print("Você está no pega_conteudo_completo")
-            # pass
+            responsetxt = response.json().get('detail', '')
+            warnings.warn(
+                f"ERROR! GET request não bem sucedida.\nStatus code {response.status_code}: '{responsetxt}'"
+            )
 
     def _baixar_conteudo_completo_parallel(self, lista_mandados: list) -> list:
         """
