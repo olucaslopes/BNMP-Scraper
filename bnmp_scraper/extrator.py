@@ -3,7 +3,7 @@ from .settings import UF_MAP, NUM_MAP
 from .errors import EstadoNotFoundError
 
 
-class Extrator:
+class BnmpScraper:
     def __init__(self, cookie):
         self._headers = {
             'authority': 'portalbnmp.cnj.jus.br',
