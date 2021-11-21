@@ -1,4 +1,3 @@
-# from .api import Estado, Municipio, OrgaoExpedidor
 from .errors import MandadosNotFoundError
 import requests
 import concurrent.futures

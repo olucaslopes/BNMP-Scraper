@@ -1,5 +1,5 @@
 import requests
-from .settings import *
+from .settings import NUM_MAP
 from .errors import MandadosNotFoundError
 import concurrent.futures
 from tqdm import tqdm
@@ -83,6 +83,7 @@ class Estado(Filtro):
         return self.obter_mandados() + val.obter_mandados()
 
     sigla = property(_get_sigla, None)
+    nome = property(_get_sigla, None)
 
 
 class Municipio(Filtro):
