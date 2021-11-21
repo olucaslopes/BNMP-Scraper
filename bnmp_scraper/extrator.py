@@ -1,11 +1,13 @@
 from .api import Estado, Municipio
 from .settings import UF_MAP, NUM_MAP
-from .errors import EstadoNotFoundError, MunicipioNotFoundError
+from .errors import InvalidCookieError, CookieOutDatedError, EstadoNotFoundError, MunicipioNotFoundError
 import string
 
 
 class BnmpScraper:
     def __init__(self, cookie):
+        if cookie[:11] != 'portalbnmp=':
+            raise InvalidCookieError("O cookie que você passou não é válido.")
         self._headers = {
             'authority': 'portalbnmp.cnj.jus.br',
             'accept': 'application/json',
@@ -23,7 +25,11 @@ class BnmpScraper:
 
     def estado(self, sigla: [int, str]):
         _id = self._set_id_estado(sigla)
-        return Estado(self._headers, _id)
+        try:
+            return Estado(self._headers, _id)
+        except TypeError:
+            raise CookieOutDatedError("O cookie que você passou está expirado! \
+            \nPor favor, redefina o extrator com outro cookie.")
 
     def municipio(self, sigla_estado, nome_municipio):
         def clean_string(name):
@@ -46,10 +52,14 @@ class BnmpScraper:
         if nome_municipio in munic_map:
             reverse_munic_map = {value: key for key, value in orig_munic_map.items()}
             _id_munic = munic_map[nome_municipio]
-            return Municipio(self._headers,
-                             self._set_id_estado(sigla_estado),
-                             _id_munic,
-                             nome=reverse_munic_map[_id_munic])
+            try:
+                return Municipio(self._headers,
+                                 self._set_id_estado(sigla_estado),
+                                 _id_munic,
+                                 nome=reverse_munic_map[_id_munic])
+            except TypeError:
+                raise CookieOutDatedError("O cookie que você passou está expirado! \
+                \nPor favor, redefina o extrator com outro cookie.")
         raise MunicipioNotFoundError('Município não encontrado')
 
     def _set_id_estado(self, id_estado):
