@@ -1,18 +1,15 @@
 import requests
 from .settings import *
-# from .utils import obter_post_pag1, request_post_poucos_mandados, request_post_expandido, \
-#     request_post_forcabruta, baixar_conteudo_completo_parallel
-from .errors import MandadosNotFoundError, EstadoNotFoundError
+from .errors import MandadosNotFoundError
 import concurrent.futures
 from tqdm import tqdm
 from .filtro import Filtro
-# from extrator import Extrator
 
 
 class Estado(Filtro):
     def __init__(self, headers, id_estado: [int, str]):
         super().__init__(headers)
-        self._id = self._set_id(id_estado)
+        self._id = id_estado
         self._init_info = self._obter_post_pag1(self._id)
         self._totalElements = self._init_info['totalElements']
         self._munic_info = {}
@@ -34,11 +31,14 @@ class Estado(Filtro):
             self._mandados_list = [item for munic in municips for item in munic.obter_mandados()]
         print(f"Recuperados {len(self._mandados_list)}/{self._totalElements} mandados")
 
-    def obter_municicipios(self) -> list:
+    def obter_municicipios(self, ids=False) -> [list, dict]:
         """
-        Retorna uma lista de ids dos municipios dessa uf.
+        Retorna uma lista com os nomes de todos os municípios dessa uf.
         """
-        return list(self._baixar_municipios().keys())
+        if not ids:
+            return list(self._baixar_municipios().keys())
+        else:
+            return self._baixar_municipios()
 
     def _baixar_municipios(self, force: bool = False) -> dict:
         """
@@ -54,7 +54,7 @@ class Estado(Filtro):
         )
         munic_list = response_munic.json()
         self._munic_info = {munic['nome']: munic['id'] for munic in munic_list}
-        return self._munic_info
+        return self._munic_info.copy()
 
     def _gerar_municipios(self, force: bool = False) -> list:
         """"
@@ -71,16 +71,6 @@ class Estado(Filtro):
         self._munic_objs = [m for m in munic if len(m) > 0]
         return self._munic_objs  # retorna somente os municípios que tem mandados
 
-    def _set_id(self, id_estado):
-        if isinstance(id_estado, str):
-            id_estado = id_estado.upper()
-            if id_estado in UF_MAP:
-                return UF_MAP[id_estado]
-        elif isinstance(id_estado, int):
-            if id_estado in NUM_MAP:
-                return id_estado
-        raise EstadoNotFoundError("id_estado precisa ser a sigla de uma UF ou um número entre 1 e 27")
-
     def _get_sigla(self):
         return NUM_MAP[self._id]
 
@@ -96,10 +86,11 @@ class Estado(Filtro):
 
 
 class Municipio(Filtro):
-    def __init__(self, headers, id_estado: int, id_munic: int):
+    def __init__(self, headers, id_estado: int, id_munic: int, nome: str = "Não especificado"):
         super().__init__(headers)
         self._id_estado = id_estado
         self._id = id_munic
+        self._nome = nome
         self._init_info = self._obter_post_pag1(self._id_estado, self._id)
         self._totalElements = self._init_info['totalElements']
         self._mandados_list = []
@@ -140,11 +131,12 @@ class Municipio(Filtro):
             headers=self._headers
         )
         org_list = response_org.json()
-        return {org['nome']: org['id'] for org in org_list}
+        self._orgaos_info = {org['nome']: org['id'] for org in org_list}
+        return self._orgaos_info.copy()
 
     def obter_orgaos(self) -> list:
         """
-        Retorna uma lista de ids dos municipios dessa uf.
+        Retorna uma lista com os nomes de todos os Órgãos Expedidores dessa uf.
         """
         return list(self._baixar_orgaos().keys())
 
@@ -162,6 +154,9 @@ class Municipio(Filtro):
         ))  # Cria as instâncias
         return [o for o in org if len(o) > 0]  # retorna somente os orgaos que tem mandados
 
+    def _get_nome(self):
+        return self._nome
+
     def __len__(self):
         return self._totalElements
 
@@ -169,6 +164,8 @@ class Municipio(Filtro):
         if not isinstance(val, (Estado, Municipio, OrgaoExpedidor)):
             raise TypeError("Você só pode somar elementos das classes Estado, Municipio ou OrgaoExpedidor")
         return self.obter_mandados() + val.obter_mandados()
+
+    nome = property(_get_nome, None)
 
 
 class OrgaoExpedidor(Filtro):

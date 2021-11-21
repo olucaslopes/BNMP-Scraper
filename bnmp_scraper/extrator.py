@@ -1,6 +1,7 @@
-from .api import Estado  # , Municipio, OrgaoExpedidor
+from .api import Estado, Municipio
 from .settings import UF_MAP, NUM_MAP
-from .errors import EstadoNotFoundError
+from .errors import EstadoNotFoundError, MunicipioNotFoundError
+import string
 
 
 class BnmpScraper:
@@ -21,11 +22,42 @@ class BnmpScraper:
         }
 
     def estado(self, sigla: [int, str]):
-        if isinstance(sigla, str):
-            sigla = sigla.upper()
-            if sigla in UF_MAP:
-                return Estado(self._headers, UF_MAP[sigla])
-        elif isinstance(sigla, int):
-            if sigla in NUM_MAP:
-                return Estado(self._headers, sigla)
+        _id = self._set_id_estado(sigla)
+        return Estado(self._headers, _id)
+
+    def municipio(self, sigla_estado, nome_municipio):
+        def clean_string(name):
+            name = name.lower()
+            ascii_map = {'á': 'a', 'â': 'a', 'à': 'a', 'ã': 'a', 'é': 'e', 'ê': 'e', 'è': 'e', 'ẽ': 'e', 'í': 'i',
+                         'î': 'i', 'ì': 'i', 'ĩ': 'i', 'ó': 'o', 'ô': 'o', 'ò': 'o', 'õ': 'o', 'ú': 'u', 'û': 'u',
+                         'ù': 'u', 'ũ': 'u', 'ç': 'c'}
+            result = ''
+            for e in name:
+                if e in string.ascii_lowercase:
+                    result += e
+                elif e in ascii_map:
+                    result += ascii_map[e]
+            return result
+
+        estado = self.estado(sigla_estado)
+        orig_munic_map = estado.obter_municicipios(ids=True)
+        munic_map = {clean_string(munic): orig_munic_map[munic] for munic in orig_munic_map}
+        nome_municipio = clean_string(nome_municipio)
+        if nome_municipio in munic_map:
+            reverse_munic_map = {value: key for key, value in orig_munic_map.items()}
+            _id_munic = munic_map[nome_municipio]
+            return Municipio(self._headers,
+                             self._set_id_estado(sigla_estado),
+                             _id_munic,
+                             nome=reverse_munic_map[_id_munic])
+        raise MunicipioNotFoundError('Município não encontrado')
+
+    def _set_id_estado(self, id_estado):
+        if isinstance(id_estado, str):
+            id_estado = id_estado.upper()
+            if id_estado in UF_MAP:
+                return UF_MAP[id_estado]
+        elif isinstance(id_estado, int):
+            if id_estado in NUM_MAP:
+                return id_estado
         raise EstadoNotFoundError("id_estado precisa ser a sigla de uma UF ou um número entre 1 e 27")

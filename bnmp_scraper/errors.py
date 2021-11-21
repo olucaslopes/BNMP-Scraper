@@ -8,3 +8,6 @@ class MandadosNotFoundError(Exception):
 
 class EstadoNotFoundError(Exception):
     pass
+
+class MunicipioNotFoundError(Exception):
+    pass
