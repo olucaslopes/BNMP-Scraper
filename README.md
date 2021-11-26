@@ -33,14 +33,16 @@
 <!-- INSTALAÇÃO -->
 ## Instalação
 Para esse programa funcionar você precisa ter o Python instalado no seu computador. Baixe o Python [aqui](https://www.python.org/downloads/).
-  ```
+
+Você pode instalar esse framework com o distribuidor de pacotes com pip, usando seguinte comando no seu **terminal**:
+  ```python
   pip install bnmp_scraper
   ```
 
 <!-- COMO OBTER COOKIE -->
 ### Como obter cookie
   
-Como o Portal BNMP requer que passemos por um captcha antes de acessar o site, para que esse programa funcione você precisa antes acessar o portal, passar pelo captcha e colar um cookie válido(e não expirado) em bnmp_scraper/settings.py seguindo o passo-a-passo abaixo.
+Como o Portal BNMP requer que passemos por um captcha antes de acessar o site, para que esse programa funcione você precisa antes acessar o portal, passar pelo captcha e obter um cookie válido(e não expirado), seguindo as intruções abaixo:
 
   
 1) Acesse https://portalbnmp.cnj.jus.br/#/pesquisa-peca e passe pelo captcha
@@ -63,13 +65,13 @@ Como o Portal BNMP requer que passemos por um captcha antes de acessar o site, p
 ## **Exemplo de uso**
 
 ### Criando extrator
-  ```
+  ```python
 from bnmp_scraper import BnmpScraper
 extrator = BnmpScraper("seu-cookie-aqui")
   ```
 
 ### Raspando Mandados
-  ```
+  ```python
 mandadosAcre = extrator.estado('AC')
 mandadosAcre.baixar_mandados()
 lista_mandados = mandadosAcre.obter_mandados()
@@ -77,7 +79,7 @@ lista_mandados = mandadosAcre.obter_mandados()
 
 
 ### Lendo mandados com o Pandas
-  ```
+  ```python
 import pandas as pd
 df = pd.json_normalize(mandadosAcre.obter_mandados())
   ```

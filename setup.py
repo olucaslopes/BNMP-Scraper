@@ -1,10 +1,11 @@
 from setuptools import setup
 from pathlib import Path
+from bnmp_scraper.settings import __version__
 
 
 setup(
     name='bnmp_scraper',
-    version='0.0.3',
+    version=__version__,
 
     url='https://github.com/olucaslopes/BNMP-Scraper',
     author='Lucas Lopes',
