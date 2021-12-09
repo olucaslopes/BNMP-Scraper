@@ -23,7 +23,22 @@ class BnmpScraper:
             'cookie': cookie,
         }
 
-    def estado(self, sigla: [int, str]):
+    def estado(self, sigla: [int, str]) -> Estado:
+        """
+        Extrai todos os mandados da UF selecionada
+        e armazena-os na instância da classe Estado.
+
+        Parameters
+        ----------
+        sigla : int or str
+            str com dois caracteres representando a sigla de uma UF ou
+            um int de 1 a 27. São ignoradas letras maiúsculas e minúsculas.
+
+        Notes
+        -----
+        Para obter uma lista com as informações dos mandados, utilize .data
+        após baixar os mandados.
+        """
         _id = self._set_id_estado(sigla)
         try:
             return Estado(self._headers, _id)
@@ -32,6 +47,25 @@ class BnmpScraper:
             \nPor favor, redefina o extrator com outro cookie.")
 
     def municipio(self, sigla_estado, nome_municipio):
+        """
+        Extrai todos os mandados do município selecionado
+        e armazena-os na instância da classe Estado.
+
+        Parameters
+        ----------
+        sigla_estado : int or str
+            str com dois caracteres representando a sigla de uma UF ou
+            um int de 1 a 27.
+
+        nome_municipio : str
+            str com o nome do município ao qual os dados serão extraidos.
+            São ignorados acentos e letras maiúsculas e minúsculas.
+
+        Notes
+        -----
+        Para obter uma lista com as informações dos mandados, utilize .data
+        após baixar os mandados.
+        """
         def clean_string(name):
             name = name.lower()
             ascii_map = {'á': 'a', 'â': 'a', 'à': 'a', 'ã': 'a', 'é': 'e', 'ê': 'e', 'è': 'e', 'ẽ': 'e', 'í': 'i',
