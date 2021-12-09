@@ -74,14 +74,14 @@ extrator = BnmpScraper("seu-cookie-aqui")
   ```python
 mandadosAcre = extrator.estado('AC')
 mandadosAcre.baixar_mandados()
-lista_mandados = mandadosAcre.obter_mandados()
+lista_mandados = mandadosAcre.data
   ```
 
 
 ### Lendo mandados com o Pandas
   ```python
 import pandas as pd
-df = pd.json_normalize(mandadosAcre.obter_mandados())
+df = pd.json_normalize(mandadosAcre.data)
   ```
 
 <!-- SOBRE O PROJETO -->

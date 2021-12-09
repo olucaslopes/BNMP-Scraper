@@ -80,7 +80,7 @@ class Estado(Filtro):
     def __add__(self, val):
         if not isinstance(val, (Estado, Municipio, OrgaoExpedidor)):
             raise TypeError("Você só pode somar elementos das classes Estado, Municipio ou OrgaoExpedidor")
-        return self.obter_mandados() + val.obter_mandados()
+        return self.data + val.data
 
     sigla = property(_get_sigla, None)
     nome = property(_get_sigla, None)
@@ -164,7 +164,7 @@ class Municipio(Filtro):
     def __add__(self, val):
         if not isinstance(val, (Estado, Municipio, OrgaoExpedidor)):
             raise TypeError("Você só pode somar elementos das classes Estado, Municipio ou OrgaoExpedidor")
-        return self.obter_mandados() + val.obter_mandados()
+        return self.data + val.data
 
     nome = property(_get_nome, None)
 
@@ -208,4 +208,4 @@ class OrgaoExpedidor(Filtro):
     def __add__(self, val):
         if not isinstance(val, (Estado, Municipio, OrgaoExpedidor)):
             raise TypeError("Você só pode somar elementos das classes Estado, Municipio ou OrgaoExpedidor")
-        return self.obter_mandados() + val.obter_mandados()
+        return self.data + val.data

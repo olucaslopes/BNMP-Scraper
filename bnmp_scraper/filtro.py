@@ -12,7 +12,7 @@ class Filtro:
         self._mandados_list = []
         self._headers = headers
 
-    def obter_mandados(self) -> list:
+    def _obter_mandados(self) -> list:
         if not self._mandados_list:
             raise MandadosNotFoundError("Você ainda não baixou os mandados. Utilize .baixar_mandados() para baixa-los")
         return self._mandados_list.copy()
@@ -175,3 +175,5 @@ class Filtro:
         executor = concurrent.futures.ThreadPoolExecutor(max_workers=32)
         result = list(executor.map(self._pega_conteudo_completo, lista_mandados))
         return [mandado for mandado in result if mandado is not None]
+
+    data = property(_obter_mandados, None)
