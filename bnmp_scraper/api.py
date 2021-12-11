@@ -142,10 +142,10 @@ class Municipio(Filtro):
         return list(self._baixar_orgaos().keys())
 
     def _gerar_orgaos(self, force: bool = False) -> list:
-        """"
+        """
         Retorna uma lista de objetos Municipio
         com todos os municípios de um Estado.
-        """""
+        """
         if self._orgaos_objs and not force:
             return self._orgaos_objs
         executor = concurrent.futures.ThreadPoolExecutor(max_workers=32)
@@ -153,7 +153,7 @@ class Municipio(Filtro):
         org = list(executor.map(
             lambda org_id: OrgaoExpedidor(self._headers, self._id_estado, self._id, org_id), orgaos_ids
         ))  # Cria as instâncias
-        return [o for o in org if len(o) > 0]  # retorna somente os orgaos que tem mandados
+        return [o for o in org if len(o) > 0]  # retorna somente os órgãos que tem mandados
 
     def _get_nome(self):
         return self._nome
@@ -170,11 +170,12 @@ class Municipio(Filtro):
 
 
 class OrgaoExpedidor(Filtro):
-    def __init__(self, headers, id_estado, id_munic, id_orgao):
+    def __init__(self, headers, id_estado, id_munic, id_orgao, nome: str = "Não especificado"):
         super().__init__(headers)
         self._id_estado = id_estado
         self._id_munic = id_munic
         self._id = id_orgao
+        self._nome = nome
         self._init_info = self._obter_post_pag1(self._id_estado, self._id_munic, self._id)
         self._totalElements = self._init_info['totalElements']
         self._mandados_list = []
@@ -209,3 +210,8 @@ class OrgaoExpedidor(Filtro):
         if not isinstance(val, (Estado, Municipio, OrgaoExpedidor)):
             raise TypeError("Você só pode somar elementos das classes Estado, Municipio ou OrgaoExpedidor")
         return self.data + val.data
+
+    def _get_nome(self):
+        return self._nome
+
+    nome = property(_get_nome, None)
