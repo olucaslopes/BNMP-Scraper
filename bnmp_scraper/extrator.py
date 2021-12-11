@@ -1,6 +1,6 @@
 from .api import Estado, Municipio
-from .settings import UF_MAP, NUM_MAP
-from .errors import InvalidCookieError, CookieOutDatedError, EstadoNotFoundError, MunicipioNotFoundError
+from .errors import InvalidCookieError, CookieOutDatedError, MunicipioNotFoundError
+from .utils import set_id_estado
 import string
 
 
@@ -39,7 +39,7 @@ class BnmpScraper:
         Para obter uma lista com as informações dos mandados, utilize .data
         após baixar os mandados.
         """
-        _id = self._set_id_estado(sigla)
+        _id = set_id_estado(sigla)
         try:
             return Estado(self._headers, _id)
         except TypeError:
@@ -88,20 +88,10 @@ class BnmpScraper:
             _id_munic = munic_map[nome_municipio]
             try:
                 return Municipio(self._headers,
-                                 self._set_id_estado(sigla_estado),
+                                 set_id_estado(sigla_estado),
                                  _id_munic,
                                  nome=reverse_munic_map[_id_munic])
             except TypeError:
                 raise CookieOutDatedError("O cookie que você passou está expirado! \
                 \nPor favor, redefina o extrator com outro cookie.")
         raise MunicipioNotFoundError('Município não encontrado')
-
-    def _set_id_estado(self, id_estado):
-        if isinstance(id_estado, str):
-            id_estado = id_estado.upper()
-            if id_estado in UF_MAP:
-                return UF_MAP[id_estado]
-        elif isinstance(id_estado, int):
-            if id_estado in NUM_MAP:
-                return id_estado
-        raise EstadoNotFoundError("id_estado precisa ser a sigla de uma UF ou um número entre 1 e 27")

@@ -3,6 +3,7 @@ import requests
 import concurrent.futures
 from itertools import repeat
 from .settings import PARAMS_FORCA_BRUTA
+from .utils import obter_data_post
 from tqdm import tqdm
 import warnings
 
@@ -40,22 +41,6 @@ class Filtro:
                 f"ERROR! POST request não bem sucedida.\nStatus code {response.status_code}: '{responsetxt}'"
             )
 
-    def _obter_data_post(self, id_estado: int, id_municipio: int = "", id_orgao: int = "") -> str:
-        """Tem como parâmetros os ids em questão.
-        Retorna a variável data necessário para
-        fazer uma requisição do tipo POST."""
-        if not id_municipio and not id_orgao:
-            # Só tem estado!
-            return '{"buscaOrgaoRecursivo":false,"orgaoExpeditor":{},"idEstado":' + str(id_estado) + '}'
-        elif not id_orgao:
-            # Tem estado e id_municipio!
-            return '{"buscaOrgaoRecursivo":false,"orgaoExpeditor":{},"idEstado":' + str(
-                id_estado) + ',"idMunicipio":' + str(id_municipio) + '}'
-        else:
-            # Tem estado, municipio e orgao!
-            return '{"buscaOrgaoRecursivo":false,"orgaoExpeditor":{"id":' + str(id_orgao) + '},"idEstado":' + str(
-                id_estado) + ',"idMunicipio":' + str(id_municipio) + '}'
-
     def _obter_post_pag1(self, id_estado: int, id_municipio: int = 0, id_orgao: int = 0, size: int = 10) -> dict:
         """Faz um POST request da primeira página para
         obter até 2.000 elementos. Retorna um dicionário
@@ -66,7 +51,7 @@ class Filtro:
             ('sort', 'dataExpedicao,ASC'),
         )
 
-        data = self._obter_data_post(id_estado, id_municipio, id_orgao)
+        data = obter_data_post(id_estado, id_municipio, id_orgao)
 
         raw_data = self._request_post(params, data)
         return raw_data
@@ -82,7 +67,7 @@ class Filtro:
         :param id_orgao: id interno
         :return: list: lista de dicionários de mandados
         """
-        data = self._obter_data_post(id_estado, id_municipio, id_orgao)
+        data = obter_data_post(id_estado, id_municipio, id_orgao)
         tot_elements = response_pag1.get('totalElements')
         tot_pages = tot_elements // 2000 if tot_elements % 2000 == 0 else tot_elements // 2000 + 1
         params = tuple((('page', str(x)), ('size', '2000'), ('sort', 'dataExpedicao,ASC')) for x in range(0, tot_pages))
@@ -97,7 +82,7 @@ class Filtro:
         limite de 10.000 linhas e alcaçar até o dobro disso.
         Retorna uma lista de dicts
         """
-        data = self._obter_data_post(id_estado, id_municipio, id_orgao)
+        data = obter_data_post(id_estado, id_municipio, id_orgao)
         tot_elements = response_pag1['totalElements']
         params = tuple((('page', str(x)), ('size', '2000'), ('sort', 'dataExpedicao,ASC')) for x in range(0, 5))
         with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
