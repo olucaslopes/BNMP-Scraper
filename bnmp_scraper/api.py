@@ -1,6 +1,5 @@
 import requests
 from .settings import NUM_MAP
-from .errors import MandadosNotFoundError
 import concurrent.futures
 from tqdm import tqdm
 from .filtro import Filtro
@@ -57,10 +56,10 @@ class Estado(Filtro):
         return self._munic_info.copy()
 
     def _gerar_municipios(self, force: bool = False) -> list:
-        """"
+        """
         Retorna uma lista de objetos Municipio
         com todos os municípios de um Estado.
-        """""
+        """
         if self._munic_objs and not force:
             return self._munic_objs
         executor = concurrent.futures.ThreadPoolExecutor(max_workers=32)
@@ -113,11 +112,6 @@ class Municipio(Filtro):
             list(tqdm(executor.map(OrgaoExpedidor.baixar_mandados, orgaos), total=len(orgaos)))
             self._mandados_list = [item for orgao in orgaos for item in orgao.obter_mandados()]
         # print(f"Recuperados {len(self._mandados_list)}/{self._totalElements} mandados")
-
-    def obter_mandados(self) -> list:
-        if not self._mandados_list:
-            raise MandadosNotFoundError("Você ainda não baixou os mandados. Utilize .baixar_mandados() para baixa-los")
-        return self._mandados_list.copy()
 
     def _baixar_orgaos(self, force: bool = False) -> dict:
         """
@@ -197,11 +191,6 @@ class OrgaoExpedidor(Filtro):
             mandados_parciais = self._request_post_forcabruta(self._id_estado, self._id_munic, self._id)
             self._mandados_list = self._baixar_conteudo_completo_parallel(mandados_parciais)
         # print(f"Recuperados {len(self._mandados_list)}/{self._totalElements} mandados")
-
-    def obter_mandados(self) -> list:
-        if not self._mandados_list:
-            raise MandadosNotFoundError("Você ainda não baixou os mandados. Utilize .baixar_mandados() para baixa-los")
-        return self._mandados_list.copy()
 
     def __len__(self):
         return self._totalElements
