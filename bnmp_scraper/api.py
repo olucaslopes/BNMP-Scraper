@@ -1,3 +1,9 @@
+"""
+Implementa as classes Estado, Municipio e OrgaoExpedidor
+que são usadas pelo usuário para acessar os dados do
+portal BNMP utilizando o Python.
+"""
+
 import requests
 from .settings import NUM_MAP
 import concurrent.futures

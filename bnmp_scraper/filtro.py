@@ -1,3 +1,9 @@
+"""
+Implementa a classe Filtro que fornece vários métodos
+de networking com o site BNMP e é a classe base das
+classes Estado, Municipio e OrgaoExpedidor que são
+implementadas em api.py
+"""
 from .errors import MandadosNotFoundError
 import requests
 import concurrent.futures
