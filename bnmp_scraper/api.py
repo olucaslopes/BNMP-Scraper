@@ -1,6 +1,7 @@
 import requests
 from .settings import NUM_MAP
 import concurrent.futures
+import warnings
 from tqdm import tqdm
 from .filtro import Filtro
 
@@ -14,21 +15,49 @@ class Estado(Filtro):
         self._munic_info = {}
         self._munic_objs = []
 
-    def baixar_mandados(self, force: bool = False):
+    def baixar_mandados(self, limit=False, force: bool = False):
+        """
+        Baixa todos os mandados do estado selecionado
+        e armazena-os em self._mandados_list
+
+        Parameters
+        ----------
+        limit : bool
+            Se False(default) serão baixados todos os mandados do estado em
+            questão. Se True só serão baixados os 2000 primeiros mandados.  # TODO: consertar limit
+
+        force : bool
+            Se False(default) a função não realiza networking caso já tenha
+            baixado os mandados. Se True baixa novamente os mandados e
+            sobreescreve os mandados previamente baixados.
+
+        Notes
+        -----
+        Para obter uma lista com as informações dos mandados, utilize .data
+        após baixar os mandados.
+        """
         if self._mandados_list and not force:
-            return self._mandados_list
-        if self._totalElements <= 20000:
-            if self._totalElements <= 10000:
-                mandados_parciais = self._request_post_poucos_mandados(self._init_info, self._id)
-            else:
-                mandados_parciais = self._request_post_expandido(self._init_info, self._id)
+            warnings.warn(
+                'Você está baixando os mandados múltiplas vezes e o chace foi usado para evitar uma\
+                sobrecarga de rede.\n\nSe você quiser mesmo baixar os mandados várias vezes, utilize force=True'
+            )
+            return None
+        if limit:
+            mandados_parciais = self._request_post_poucos_mandados(self._init_info, self._id)
             self._mandados_list = self._baixar_conteudo_completo_parallel(mandados_parciais)
         else:
-            municips = self._gerar_municipios()
-            executor = concurrent.futures.ThreadPoolExecutor(max_workers=32)
-            list(tqdm(executor.map(Municipio.baixar_mandados, municips), total=len(municips)))
-            self._mandados_list = [item for munic in municips for item in munic.obter_mandados()]
-        print(f"Recuperados {len(self._mandados_list)}/{self._totalElements} mandados")
+            if self._totalElements <= 20000:
+                if self._totalElements <= 10000:
+                    mandados_parciais = self._request_post_poucos_mandados(self._init_info, self._id)
+                else:
+                    mandados_parciais = self._request_post_expandido(self._init_info, self._id)
+                self._mandados_list = self._baixar_conteudo_completo_parallel(mandados_parciais)
+            else:
+                municips = self._gerar_municipios()
+                executor = concurrent.futures.ThreadPoolExecutor(max_workers=32)
+                list(tqdm(executor.map(Municipio.baixar_mandados, municips), total=len(municips)))
+                self._mandados_list = [item for munic in municips for item in munic.obter_mandados()]
+            print(f"Recuperados {len(self._mandados_list)}/{self._totalElements} mandados")
 
     def obter_municicipios(self, ids=False) -> [list, dict]:
         """
