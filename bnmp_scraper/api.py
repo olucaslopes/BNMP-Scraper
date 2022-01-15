@@ -15,7 +15,7 @@ class Estado(Filtro):
         self._munic_info = {}
         self._munic_objs = []
 
-    def baixar_mandados(self, limit=False, force: bool = False):
+    def baixar_mandados(self, limit: bool = False, force: bool = False) -> None:
         """
         Baixa todos os mandados do estado selecionado
         e armazena-os em self._mandados_list
@@ -24,7 +24,7 @@ class Estado(Filtro):
         ----------
         limit : bool
             Se False(default) serão baixados todos os mandados do estado em
-            questão. Se True só serão baixados os 2000 primeiros mandados.  # TODO: consertar limit
+            questão. Se True só serão baixados os 2000 primeiros mandados.
 
         force : bool
             Se False(default) a função não realiza networking caso já tenha
@@ -38,8 +38,8 @@ class Estado(Filtro):
         """
         if self._mandados_list and not force:
             warnings.warn(
-                'Você está baixando os mandados múltiplas vezes e o chace foi usado para evitar uma\
-                sobrecarga de rede.\n\nSe você quiser mesmo baixar os mandados várias vezes, utilize force=True'
+                'Você está baixando os mesmos mandados múltiplas vezes. O cache foi usado para evitar uma\
+                sobrecarga de rede.\n\nSe você quiser mesmo baixar os mesmos mandados várias vezes, utilize force=True'
             )
             return None
         if limit:
