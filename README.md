@@ -35,9 +35,9 @@
 Para esse programa funcionar você precisa ter o Python instalado no seu computador. Baixe o Python [aqui](https://www.python.org/downloads/).
 
 Você pode instalar esse framework com o distribuidor de pacotes com pip, usando seguinte comando no seu **terminal**:
-  ```python
-  pip install bnmp_scraper
-  ```
+```console
+$ python -m pip install bnmp_scraper
+```
 
 <!-- COMO OBTER COOKIE -->
 ### Como obter cookie
@@ -106,7 +106,7 @@ Nosso programa navega diretamente na API do Portal BNMP para coletar os mandados
 ## Como funciona
 
 <p align="center">
-    <img align='center' src='img/main-flowchart.png'/>
+    <img align='center' src='https://raw.githubusercontent.com/olucaslopes/BNMP-Scraper/master/img/main-flowchart.png'/>
 
 <!-- PRINCIPAIS DESAFIOS -->
 ### Principais desafios
