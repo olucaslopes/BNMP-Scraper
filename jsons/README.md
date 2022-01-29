@@ -1,1 +1,0 @@
-Aqui ficarão todos os mandados coletados pelo programa, cada mandado em um arquivo JSON.
