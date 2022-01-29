@@ -44,8 +44,11 @@ class Estado(Filtro):
         """
         if self._mandados_list and not force:
             warnings.warn(
-                'Você está baixando os mesmos mandados múltiplas vezes. O cache foi usado para evitar uma\
-                sobrecarga de rede.\n\nSe você quiser mesmo baixar os mesmos mandados várias vezes, utilize force=True'
+                (
+                    '\nVocê está baixando os mandados múltiplas vezes. O cache foi usado para evitar uma '
+                    'sobrecarga de rede.\n\nSe você quiser mesmo baixar os mandados várias vezes, utilize '
+                    '.baixar_mandados(force=True)'
+                )
             )
             return None
         if limit:
@@ -134,7 +137,14 @@ class Municipio(Filtro):
 
     def baixar_mandados(self, force: bool = False):
         if self._mandados_list and not force:
-            return self._mandados_list
+            warnings.warn(
+                (
+                    '\nVocê está baixando os mandados múltiplas vezes. O cache foi usado para evitar uma '
+                    'sobrecarga de rede.\n\nSe você quiser mesmo baixar os mandados várias vezes, utilize '
+                    '.baixar_mandados(force=True)'
+                )
+            )
+            return None
         if self._totalElements <= 20000:
             if self._totalElements <= 10000:
                 mandados_parciais = self._request_post_poucos_mandados(self._init_info, self._id_estado, self._id)
@@ -209,9 +219,16 @@ class OrgaoExpedidor(Filtro):
         self._totalElements = self._init_info['totalElements']
         self._mandados_list = []
 
-    def baixar_mandados(self, force: bool = False):
+    def baixar_mandados(self, force: bool = False) -> None:
         if self._mandados_list and not force:
-            return self._mandados_list
+            warnings.warn(
+                (
+                    '\nVocê está baixando os mandados múltiplas vezes. O cache foi usado para evitar uma '
+                    'sobrecarga de rede.\n\nSe você quiser mesmo baixar os mandados várias vezes, utilize '
+                    '.baixar_mandados(force=True)'
+                )
+            )
+            return None
         if self._totalElements <= 20000:
             if self._totalElements <= 10000:
                 mandados_parciais = self._request_post_poucos_mandados(
