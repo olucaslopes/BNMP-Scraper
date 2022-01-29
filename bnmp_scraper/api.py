@@ -21,16 +21,15 @@ class Estado(Filtro):
         self._munic_info = {}
         self._munic_objs = []
 
-    def baixar_mandados(self, limit: bool = False, force: bool = False) -> None:
+    def baixar_mandados(self, limit: int = 0, force: bool = False) -> None:
         """
         Baixa todos os mandados do estado selecionado
         e armazena-os em self._mandados_list
 
         Parameters
         ----------
-        limit : bool
-            Se False(default) serão baixados todos os mandados do estado em
-            questão. Se True só serão baixados os 2000 primeiros mandados.
+        limit : int
+            Limita os mandados baixados a até 2000 (dois mil) mandados.
 
         force : bool
             Se False(default) a função não realiza networking caso já tenha
@@ -52,21 +51,21 @@ class Estado(Filtro):
             )
             return None
         if limit:
-            mandados_parciais = self._request_post_poucos_mandados(self._init_info, self._id)
+            mandados_parciais = self._obter_post_pag1(self._id, size=limit)['content']
+            self._mandados_list = self._baixar_conteudo_completo_parallel(mandados_parciais)
+            return None
+        if self._totalElements <= 20000:
+            if self._totalElements <= 10000:
+                mandados_parciais = self._request_post_poucos_mandados(self._init_info, self._id)
+            else:
+                mandados_parciais = self._request_post_expandido(self._init_info, self._id)
             self._mandados_list = self._baixar_conteudo_completo_parallel(mandados_parciais)
         else:
-            if self._totalElements <= 20000:
-                if self._totalElements <= 10000:
-                    mandados_parciais = self._request_post_poucos_mandados(self._init_info, self._id)
-                else:
-                    mandados_parciais = self._request_post_expandido(self._init_info, self._id)
-                self._mandados_list = self._baixar_conteudo_completo_parallel(mandados_parciais)
-            else:
-                municips = self._gerar_municipios()
-                executor = concurrent.futures.ThreadPoolExecutor(max_workers=32)
-                list(tqdm(executor.map(Municipio.baixar_mandados, municips), total=len(municips)))
-                self._mandados_list = [item for munic in municips for item in munic.obter_mandados()]
-            print(f"Recuperados {len(self._mandados_list)}/{self._totalElements} mandados")
+            municips = self._gerar_municipios()
+            executor = concurrent.futures.ThreadPoolExecutor(max_workers=32)
+            list(tqdm(executor.map(Municipio.baixar_mandados, municips), total=len(municips)))
+            self._mandados_list = [item for munic in municips for item in munic.obter_mandados()]
+        print(f"Recuperados {len(self._mandados_list)}/{self._totalElements} mandados")
 
     def obter_municicipios(self, ids=False) -> [list, dict]:
         """
@@ -116,7 +115,7 @@ class Estado(Filtro):
             raise TypeError("Você só pode somar elementos das classes Estado, Municipio ou OrgaoExpedidor")
         return self.data + val.data
 
-    sigla = property(_get_sigla, None)
+    sigla = property(_get_sigla, None)  # Sinônimo de nome
     nome = property(_get_sigla, None)
 
 
@@ -132,7 +131,26 @@ class Municipio(Filtro):
         self._orgaos_info = {}
         self._orgaos_objs = []
 
-    def baixar_mandados(self, force: bool = False):
+    def baixar_mandados(self, limit: int = 0, force: bool = False) -> None:
+        """
+        Baixa todos os mandados do município selecionado
+        e armazena-os em self._mandados_list
+
+        Parameters
+        ----------
+        limit : int
+            Limita os mandados baixados a até 2000 (dois mil) mandados.
+
+        force : bool
+            Se False(default) a função não realiza networking caso já tenha
+            baixado os mandados. Se True baixa novamente os mandados e
+            sobreescreve os mandados previamente baixados.
+
+        Notes
+        -----
+        Para obter uma lista com as informações dos mandados, utilize .data
+        após baixar os mandados.
+        """
         if self._mandados_list and not force:
             warnings.warn(
                 (
@@ -141,6 +159,10 @@ class Municipio(Filtro):
                     '.baixar_mandados(force=True)'
                 )
             )
+            return None
+        if limit:
+            mandados_parciais = self._obter_post_pag1(self._id_estado, self._id, size=limit)['content']
+            self._mandados_list = self._baixar_conteudo_completo_parallel(mandados_parciais)
             return None
         if self._totalElements <= 20000:
             if self._totalElements <= 10000:
