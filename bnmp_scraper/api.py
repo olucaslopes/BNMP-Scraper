@@ -111,9 +111,6 @@ class Estado(Filtro):
     def _get_sigla(self):
         return NUM_MAP[self._id]
 
-    def __len__(self):
-        return self._totalElements
-
     def __add__(self, val):
         if not isinstance(val, (Estado, Municipio, OrgaoExpedidor)):
             raise TypeError("Você só pode somar elementos das classes Estado, Municipio ou OrgaoExpedidor")
@@ -197,9 +194,6 @@ class Municipio(Filtro):
     def _get_nome(self):
         return self._nome
 
-    def __len__(self):
-        return self._totalElements
-
     def __add__(self, val):
         if not isinstance(val, (Estado, Municipio, OrgaoExpedidor)):
             raise TypeError("Você só pode somar elementos das classes Estado, Municipio ou OrgaoExpedidor")
@@ -243,9 +237,6 @@ class OrgaoExpedidor(Filtro):
             mandados_parciais = self._request_post_forcabruta(self._id_estado, self._id_munic, self._id)
             self._mandados_list = self._baixar_conteudo_completo_parallel(mandados_parciais)
         # print(f"Recuperados {len(self._mandados_list)}/{self._totalElements} mandados")
-
-    def __len__(self):
-        return self._totalElements
 
     def __add__(self, val):
         if not isinstance(val, (Estado, Municipio, OrgaoExpedidor)):
