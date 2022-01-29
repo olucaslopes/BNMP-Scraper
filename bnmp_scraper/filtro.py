@@ -12,14 +12,33 @@ from .settings import PARAMS_FORCA_BRUTA
 from .utils import obter_data_post
 from tqdm import tqdm
 import warnings
+import json
 
 
 class Filtro:
     def __init__(self, headers):
         self._mandados_list = []
         self._headers = headers
+        self._totalElements = None
+
+    def to_json(self, caminho: str = '', modo='w'):
+        # Error checking
+        if modo not in ('a', 'w', 'x'):
+            raise ValueError("modo deve ser igual a 'a', 'w' ou 'x'.")
+        if not (isinstance(caminho, str) or caminho is None):
+            raise ValueError('caminho precisa ser uma str ou None')
+
+        if caminho:
+            with open(f'{caminho}', modo) as file:
+                json.dump(self.data, file)
+        else:
+            with open(f'{self.nome}.json', modo) as file:
+                json.dump(self.data, file)
 
     def _obter_mandados(self) -> list:
+        """
+        Retorna uma cópia dos mandados baixados
+        """
         if not self._mandados_list:
             raise MandadosNotFoundError("Você ainda não baixou os mandados. Utilize .baixar_mandados() para baixa-los")
         return self._mandados_list.copy()
@@ -166,5 +185,12 @@ class Filtro:
         executor = concurrent.futures.ThreadPoolExecutor(max_workers=32)
         result = list(executor.map(self._pega_conteudo_completo, lista_mandados))
         return [mandado for mandado in result if mandado is not None]
+
+    def __len__(self):
+        return self._totalElements
+
+    @property
+    def nome(self):
+        raise NotImplementedError
 
     data = property(_obter_mandados, None)
