@@ -13,6 +13,7 @@ from .utils import obter_data_post
 from tqdm import tqdm
 import warnings
 import json
+from requests.exceptions import JSONDecodeError
 
 
 class Filtro:
@@ -61,10 +62,16 @@ class Filtro:
         if response.ok:
             return response.json()
         else:
-            responsetxt = response.json().get('detail', '')
-            warnings.warn(
-                f"ERROR! POST request não bem sucedida.\nStatus code {response.status_code}: '{responsetxt}'"
-            )
+            try:
+                responsetxt = response.json().get('detail', '')
+            except JSONDecodeError:
+                warnings.warn(
+                    f"ERROR! POST request não bem sucedida.\nStatus code {response.status_code}"
+                )
+            else:
+                warnings.warn(
+                    f"ERROR! POST request não bem sucedida.\nStatus code {response.status_code}: '{responsetxt}'"
+                )
 
     def _obter_post_pag1(self, id_estado: int, id_municipio: int = 0, id_orgao: int = 0, size: int = 10) -> dict:
         """Faz um POST request da primeira página para
@@ -171,10 +178,20 @@ class Filtro:
             # with open(f"jsons/{response_dict['id']}.json", 'wb') as outf:
             #     outf.write(response.content)
         else:
-            responsetxt = response.json().get('detail', '')
-            warnings.warn(
-                f"ERROR! GET request não bem sucedida.\nStatus code {response.status_code}: '{responsetxt}'"
-            )
+            try:
+                responsetxt = response.json().get('detail', '')
+            except JSONDecodeError:
+                warnings.warn(
+                    (f"ERROR! GET request não bem sucedida."
+                     f"\nNão foi possível obter o mandado {linha.get('numeroPecaFormatado', '')}"
+                     f"\nStatus code {response.status_code}")
+                )
+            else:
+                warnings.warn(
+                    (f"ERROR! GET request não bem sucedida."
+                     f"Não foi possível obter o mandado {linha.get('numeroPecaFormatado', '')}"
+                     f"\nStatus code {response.status_code}: '{responsetxt}'")
+                )
 
     def _baixar_conteudo_completo_parallel(self, lista_mandados: list) -> list:
         """
