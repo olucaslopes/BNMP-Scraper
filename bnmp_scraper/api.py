@@ -90,6 +90,14 @@ class Estado(Filtro):
             )
             return None
         if limit:
+            if not isinstance(limit, int) or limit < 0:
+                raise ValueError('limit precisa ser um número inteiro não-negativo')
+            if limit > 2000:
+                warnings.warn(
+                    ('O limite do Portal BNMP por requisição é de 2000 (dois mil) mandados.'
+                     '\nPara valores de limit maiores do que 2000 (dois mil), será mantido o limite de 2000 mandados.'
+                     '\nSe você deseja baixar mais mandados utilize limit=0 ou simplesmente não especifique o limite')
+                )
             mandados_parciais = self._obter_post_pag1(self._id, size=limit)['content']
             self._mandados_list = self._baixar_conteudo_completo_parallel(mandados_parciais)
             return None
