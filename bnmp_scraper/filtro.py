@@ -73,7 +73,7 @@ class Filtro:
         params = (
             ('page', '0'),
             ('size', f'{size}'),
-            ('sort', 'dataExpedicao,ASC'),
+            ('sort', 'dataExpedicao,DESC'),
         )
 
         data = obter_data_post(id_estado, id_municipio, id_orgao)
@@ -95,7 +95,7 @@ class Filtro:
         data = obter_data_post(id_estado, id_municipio, id_orgao)
         tot_elements = response_pag1.get('totalElements')
         tot_pages = tot_elements // 2000 if tot_elements % 2000 == 0 else tot_elements // 2000 + 1
-        params = tuple((('page', str(x)), ('size', '2000'), ('sort', 'dataExpedicao,ASC')) for x in range(0, tot_pages))
+        params = tuple((('page', str(x)), ('size', '2000'), ('sort', 'dataExpedicao,DESC')) for x in range(0, tot_pages))
         with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
             novos_mandados = list(executor.map(self._request_post, params, repeat(data)))
         return [x for sublist in novos_mandados for x in sublist['content']]  # List unpacking
@@ -109,7 +109,7 @@ class Filtro:
         """
         data = obter_data_post(id_estado, id_municipio, id_orgao)
         tot_elements = response_pag1['totalElements']
-        params = tuple((('page', str(x)), ('size', '2000'), ('sort', 'dataExpedicao,ASC')) for x in range(0, 5))
+        params = tuple((('page', str(x)), ('size', '2000'), ('sort', 'dataExpedicao,DESC')) for x in range(0, 5))
         with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
             novos_mandados = list(executor.map(self._request_post, params, repeat(data)))
         all_mandados = [x for sublist in novos_mandados for x in sublist['content']]  # List unpacking
@@ -117,12 +117,12 @@ class Filtro:
         if paginas_restantes >= 1:
             params = tuple(
                 (('page', str(x)), ('size', '2000'),
-                 ('sort', 'dataExpedicao,DESC')) for x in range(0, int(paginas_restantes)))
+                 ('sort', 'dataExpedicao,ASC')) for x in range(0, int(paginas_restantes)))
             with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
                 novos_mandados = executor.map(self._request_post, params, repeat(data))
             for e in [x['content'] for x in novos_mandados]:
                 all_mandados.extend(e)
-        params = (('page', str(paginas_restantes)), ('size', '2000'), ('sort', 'dataExpedicao,DESC'))
+        params = (('page', str(paginas_restantes)), ('size', '2000'), ('sort', 'dataExpedicao,ASC'))
         ultima_pag = self._request_post(params, data)
         all_mandados.extend([x for x in ultima_pag['content'] if x not in all_mandados])
         return all_mandados
