@@ -13,7 +13,46 @@ from .filtro import Filtro
 
 
 class Estado(Filtro):
-    def __init__(self, headers, id_estado: [int, str]):
+    """
+    Classe usada para representar uma Unidade Federativa (UF)
+
+    Attributes
+    ----------
+    _id : int
+        id interno do BNMP que representa um determinado estado
+    _init_info : dict
+        informações básicas de uma página
+    _totalElements : int
+        número de mandados totais de um estado
+    _munic_info : int
+        dict que mapeia os nomes dos municípios de um estado ao id interno deles no BNMP
+    _munic_objs : list
+        lista de instâncias da classe Municipio com os municípios de um determinado estado
+
+    Methods
+    -------
+    says(sound=None)
+        Prints the animals name and what sound it makes
+    baixar_mandados(limit: int = 0, force: bool = False)
+        Baixa todos os mandados do estado selecionado e armazena-os em self._mandados_list
+    obter_municicipios(ids=False)
+        Se ids=False(Default) retorna uma lista com os nomes de todos os municípios dessa uf(padrão)
+        ou um dicionário mapeando cada cidade dessa UF ao seu respectivo id interno do BNMP.
+    _baixar_municipios(force=False)
+        A partir do id da de uma UF retorna um dict mapeando todos os municípios dessa UF aos seus ids.
+    _gerar_municipios(force=False)
+        Retorna uma lista de objetos Municipiocom todos os municípios de um Estado
+
+    """
+    def __init__(self, headers, id_estado: int):
+        """
+        Parameters
+        ----------
+        headers : dict
+            Os headers para serem passados no networking
+        id_estado : int
+            Id interno do BNMP que representa um determinado estado
+        """
         super().__init__(headers)
         self._id = id_estado
         self._init_info = self._obter_post_pag1(self._id)
@@ -69,7 +108,10 @@ class Estado(Filtro):
 
     def obter_municicipios(self, ids=False) -> [list, dict]:
         """
-        Retorna uma lista com os nomes de todos os municípios dessa uf.
+        Se ids=False(Default) retorna uma lista com os nomes de
+        todos os municípios dessa uf. Se ids=True retorna um
+        dicionário mapeando cada cidade dessa UF ao seu
+        respectivo id interno do BNMP.
         """
         if not ids:
             return list(self._baixar_municipios().keys())
@@ -120,6 +162,9 @@ class Estado(Filtro):
 
 
 class Municipio(Filtro):
+    """
+    Classe usada para representar um município
+    """
     def __init__(self, headers, id_estado: int, id_munic: int, nome: str = "Não especificado"):
         super().__init__(headers)
         self._id_estado = id_estado

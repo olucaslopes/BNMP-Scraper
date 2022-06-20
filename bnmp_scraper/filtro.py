@@ -50,7 +50,7 @@ class Filtro:
 
     def _request_post(self, params, data):
         """Faz uma requisição do tipo POST e retorna
-        um JSON se ela for bem sucedida e um NoneType
+        um dict se ela for bem sucedida e um NoneType
         caso contrário"""
         response = requests.post(
             url='https://portalbnmp.cnj.jus.br/bnmpportal/api/pesquisa-pecas/filter',
@@ -68,8 +68,8 @@ class Filtro:
 
     def _obter_post_pag1(self, id_estado: int, id_municipio: int = 0, id_orgao: int = 0, size: int = 10) -> dict:
         """Faz um POST request da primeira página para
-        obter até 2.000 elementos. Retorna um dicionário
-         e um int com o total de mandados daquele id."""
+        obter até 2.000 elementos. Retorna um dict
+        com o total de mandados daquele id."""
         params = (
             ('page', '0'),
             ('size', f'{size}'),
@@ -151,7 +151,7 @@ class Filtro:
         """
         "Entra" em cada um dos mandados com o
         método GET para pegar mais informações
-        e salva-nas em json/<id_mandado>.json
+        e retorna-as como um dict
         """
         if not isinstance(linha, dict):
             warnings.warn(f"ERROR! Mandado should be a dict, not a {type(linha)}")
@@ -178,9 +178,12 @@ class Filtro:
 
     def _baixar_conteudo_completo_parallel(self, lista_mandados: list) -> list:
         """
-        Dada uma lista de mandados, utiliza concorrência
-        para salvar cada mandado em um arquivo JSON de
-        maneira mais eficiente.
+        Dada uma lista de mandados com informações parciais,
+        utiliza concorrência para fazer requisições do tipo
+        GET e assim extrair mais informações de maneira mais
+        eficiente.
+
+        Retorna uma lista de dicts de mandados com as informações expandidas.
         """
         executor = concurrent.futures.ThreadPoolExecutor(max_workers=32)
         result = list(executor.map(self._pega_conteudo_completo, lista_mandados))

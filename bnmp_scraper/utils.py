@@ -2,7 +2,7 @@ from .settings import UF_MAP, NUM_MAP
 from .errors import EstadoNotFoundError
 
 
-def set_id_estado(id_estado: [int, str]):
+def set_id_estado(id_estado: [int, str]) -> int:
     """
     Verifica se id_estado é uma str com a sigla
     de uma UF ou um int de 1 a 27 e retorna um int,
