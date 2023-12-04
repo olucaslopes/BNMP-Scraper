@@ -4,8 +4,10 @@ from .utils import set_id_estado
 import string
 
 
-class BnmpScraper:
-    def __init__(self, cookie):
+# TODO: adicionar docstring para o arquivo
+
+class BnmpScraper:  # TODO: adicionar docstring para classe
+    def __init__(self, cookie):    # TODO: adicionar docstring para o construtor
         if cookie[:11] != 'portalbnmp=':
             raise InvalidCookieError("O cookie que você passou não é válido.")
         self._headers = {

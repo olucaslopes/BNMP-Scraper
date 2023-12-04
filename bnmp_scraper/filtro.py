@@ -5,15 +5,44 @@ classes Estado, Municipio e OrgaoExpedidor que são
 implementadas em api.py
 """
 from .errors import MandadosNotFoundError
-import requests
+from requests import Session
+# from requests.adapters import HTTPAdapter
+from urllib3.util import Retry
 import concurrent.futures
 from itertools import repeat
 from .settings import PARAMS_FORCA_BRUTA
 from .utils import obter_data_post
-from tqdm import tqdm
+from tqdm.auto import tqdm
 import warnings
 import json
 from requests.exceptions import JSONDecodeError
+from requests_ratelimiter import LimiterAdapter  # LimiterSession
+import threading
+import time
+import random
+from datetime import datetime
+
+session = Session()
+
+# Apply a rate-limit (5 requests per second) to all requests
+limiter_adapter = LimiterAdapter(per_second=0.7, limit_statuses=[429, 503])
+
+retries = Retry(
+    total=5,
+    backoff_factor=3,
+    backoff_jitter=1,
+    status_forcelist=[502, 503, 504],
+    allowed_methods={'GET'},
+)
+
+# session.mount('https://', HTTPAdapter(max_retries=retries))
+# session.mount('http://', HTTPAdapter(max_retries=retries))
+
+session.mount('http://', limiter_adapter)
+session.mount('https://', limiter_adapter)
+
+# Define a lock to synchronize the access to the shared variable
+lock = threading.Lock()
 
 
 class Filtro:
@@ -21,6 +50,10 @@ class Filtro:
         self._mandados_list = []
         self._headers = headers
         self._totalElements = None
+        self.rate_limit_fails = 0
+        self.too_many_requests_hold = False
+        self.saving_file_name = f"mandados/mandados-{datetime.today().strftime('%Y-%m-%d')}.json"
+        self.saved_mandados_ids = {}
 
     def to_json(self, caminho: str = '', modo='w'):
         # Error checking
@@ -53,7 +86,7 @@ class Filtro:
         """Faz uma requisição do tipo POST e retorna
         um dict se ela for bem sucedida e um NoneType
         caso contrário"""
-        response = requests.post(
+        response = session.post(
             url='https://portalbnmp.cnj.jus.br/bnmpportal/api/pesquisa-pecas/filter',
             headers=self._headers,
             params=params,
@@ -105,7 +138,10 @@ class Filtro:
         params = tuple((('page', str(x)), ('size', '2000'), ('sort', 'dataExpedicao,DESC')) for x in range(0, tot_pages))
         with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
             novos_mandados = list(executor.map(self._request_post, params, repeat(data)))
-        return [x for sublist in novos_mandados for x in sublist['content']]  # List unpacking
+        if novos_mandados is None or len(novos_mandados) == 0:
+            return []
+        else:
+            return [x for sublist in novos_mandados for x in (sublist['content'] if sublist is not None else [])]  # List unpacking
 
     def _request_post_expandido(self, response_pag1: dict, id_estado: int, id_municipio: int = 0,
                                 id_orgao: int = 0) -> list:
@@ -160,21 +196,53 @@ class Filtro:
         método GET para pegar mais informações
         e retorna-as como um dict
         """
+        if self.rate_limit_fails > 5:
+            return None
         if not isinstance(linha, dict):
             warnings.warn(f"ERROR! Mandado should be a dict, not a {type(linha)}")
             return None
-        # HEADERS['user-agent'] = ua.random
         id_mandado = linha.get("id")
         id_tipo_peca = linha.get("idTipoPeca")
         if id_tipo_peca is None:
             id_tipo_peca = linha['tipoPeca'].get('id')
 
-        response = requests.get(
+        if id_mandado in self.saved_mandados_ids:
+            return None
+
+        head = self._headers.copy()
+        # head['cookie'] = random.choice(cookies)
+
+        response = session.get(
             url=f'https://portalbnmp.cnj.jus.br/bnmpportal/api/certidaos/{id_mandado}/{id_tipo_peca}',
-            headers=self._headers
+            headers=head
         )
+        if response.status_code == 503:
+            self.rate_limit_fails += 1
+            with lock:  # Acquire the lock
+                self.too_many_requests_hold = True  # Set the shared variable to True
+            print(f"Request GET got 503 error, sleeping for 10 seconds")
+            time.sleep(random.randint(2,10))  # Sleep for 10 seconds
+            with lock:  # Acquire the lock
+                self.too_many_requests_hold = False  # Set the shared variable to False
+                response = session.get(
+                    url=f'https://portalbnmp.cnj.jus.br/bnmpportal/api/certidaos/{id_mandado}/{id_tipo_peca}',
+                    headers=head
+                )
+        else:  # If the status code is not 503
+            with lock:  # Acquire the lock
+                if self.too_many_requests_hold:  # Check if the shared variable is True
+                    print(f"Request GET is waiting for 503 error to be resolved")
+                    time.sleep(random.randint(2,10))  # Sleep for 10 seconds
+                    response = session.get(
+                        url=f'https://portalbnmp.cnj.jus.br/bnmpportal/api/certidaos/{id_mandado}/{id_tipo_peca}',
+                        headers=head
+                    )
         if response.ok:
-            return response.json()
+            json_response = response.json()
+            return json_response
+            # with open(f'./mandados/{id_mandado}.json', 'w') as f:
+            #     json.dump(json_response, f, indent=4)
+            # return json_response
             # with open(f"jsons/{response_dict['id']}.json", 'wb') as outf:
             #     outf.write(response.content)
         else:
@@ -202,9 +270,51 @@ class Filtro:
 
         Retorna uma lista de dicts de mandados com as informações expandidas.
         """
-        executor = concurrent.futures.ThreadPoolExecutor(max_workers=32)
-        result = list(executor.map(self._pega_conteudo_completo, lista_mandados))
-        return [mandado for mandado in result if mandado is not None]
+        cached_mandados = self._get_cached_mandados()
+
+
+        remaining_mandados = self._get_remaining_mandados(lista_mandados)
+        executor = concurrent.futures.ThreadPoolExecutor(max_workers=3)
+        result = list(
+            tqdm(
+                executor.map(self._pega_conteudo_completo, remaining_mandados),
+                total=len(lista_mandados),
+                initial=len(cached_mandados),
+                desc='Baixando mandados'
+            )
+        )
+
+        result = [mandado for mandado in result if mandado is not None]
+
+        print(f'Baixados {len(result)} mandados')
+
+        result.extend(cached_mandados)
+
+        with open(self.saving_file_name, 'w', encoding='utf-8') as f:
+            json.dump(result, f, indent=4, ensure_ascii=False)
+
+        if self.rate_limit_fails > 5:
+            warnings.warn('O limite de requisições foi excedido. Tente continuar o download mais tarde.')
+        return result
+
+    def _get_cached_mandados(self) -> list:
+        try:
+            with open(self.saving_file_name, 'r', encoding='utf-8') as f:
+                mandados = json.load(f)
+
+            self.saved_mandados_ids = {mandado['id'] for mandado in mandados}
+
+            return mandados
+        except BaseException:
+            warnings.warn(f'Não foi possível acessar os mandados salvos em {self.saving_file_name}')
+            return []
+
+
+    def _get_remaining_mandados(self, lista_mandados):
+        ids_lista_mandados = {mandado['id'] for mandado in lista_mandados}
+        self._get_cached_mandados()
+        remaining_ids = {_id for _id in ids_lista_mandados if _id not in self.saved_mandados_ids}
+        return [m for m in lista_mandados if m['id'] in remaining_ids]
 
     def __len__(self):
         return self._totalElements

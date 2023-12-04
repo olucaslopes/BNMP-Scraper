@@ -60,13 +60,17 @@ class Estado(Filtro):
         self._munic_info = {}
         self._munic_objs = []
 
-    def baixar_mandados(self, limit: int = 0, force: bool = False) -> None:
+    def baixar_mandados(self, extend: bool = False, limit: int = 0, force: bool = False) -> None:
         """
         Baixa todos os mandados do estado selecionado
         e armazena-os em self._mandados_list
 
         Parameters
         ----------
+        extend : bool
+            Se True faz uma requisição a mais para cada mandado para agregar
+            informações adicionais.
+
         limit : int
             Limita os mandados baixados a até 2000 (dois mil) mandados.
 
@@ -80,7 +84,7 @@ class Estado(Filtro):
         Para obter uma lista com as informações dos mandados, utilize .data
         após baixar os mandados.
         """
-        if self._mandados_list and not force:
+        if self._mandados_list and not force and len(self._mandados_list) == self._totalElements:
             warnings.warn(
                 (
                     '\nVocê está baixando os mandados múltiplas vezes. O cache foi usado para evitar uma '
@@ -89,6 +93,7 @@ class Estado(Filtro):
                 )
             )
             return None
+        self.rate_limit_fails = 0
         if limit:
             if not isinstance(limit, int) or limit < 0:
                 raise ValueError('limit precisa ser um número inteiro não-negativo')
@@ -99,19 +104,28 @@ class Estado(Filtro):
                      '\nSe você deseja baixar mais mandados utilize limit=0 ou simplesmente não especifique o limite')
                 )
             mandados_parciais = self._obter_post_pag1(self._id, size=limit)['content']
+            if not extend:
+                self._mandados_list = mandados_parciais
+                return None
             self._mandados_list = self._baixar_conteudo_completo_parallel(mandados_parciais)
             return None
         if self._totalElements <= 20000:
             if self._totalElements <= 10000:
                 mandados_parciais = self._request_post_poucos_mandados(self._init_info, self._id)
+                if not extend:
+                    self._mandados_list = mandados_parciais
+                    return None
             else:
                 mandados_parciais = self._request_post_expandido(self._init_info, self._id)
+                if not extend:
+                    self._mandados_list = mandados_parciais
+                    return None
             self._mandados_list = self._baixar_conteudo_completo_parallel(mandados_parciais)
         else:
             municips = self._gerar_municipios()
             executor = concurrent.futures.ThreadPoolExecutor(max_workers=32)
             list(tqdm(executor.map(Municipio.baixar_mandados, municips), total=len(municips)))
-            self._mandados_list = [item for munic in municips for item in munic.obter_mandados()]
+            self._mandados_list = [item for munic in municips for item in munic.data]
         print(f"Recuperados {len(self._mandados_list)}/{self._totalElements} mandados")
 
     def obter_municicipios(self, ids=False) -> [list, dict]:
@@ -173,18 +187,19 @@ class Municipio(Filtro):
     """
     Classe usada para representar um município
     """
+
     def __init__(self, headers, id_estado: int, id_munic: int, nome: str = "Não especificado"):
         super().__init__(headers)
         self._id_estado = id_estado
         self._id = id_munic
         self._nome = nome
         self._init_info = self._obter_post_pag1(self._id_estado, self._id)
-        self._totalElements = self._init_info['totalElements']
+        self._totalElements = self._init_info['totalElements'] if self._init_info is not None else 0
         self._mandados_list = []
         self._orgaos_info = {}
         self._orgaos_objs = []
 
-    def baixar_mandados(self, limit: int = 0, force: bool = False) -> None:
+    def baixar_mandados(self, limit: int = 0, force: bool = False) -> None:  # TODO: Adicionar extend para quem não quer tanta informação
         """
         Baixa todos os mandados do município selecionado
         e armazena-os em self._mandados_list
@@ -227,7 +242,7 @@ class Municipio(Filtro):
             orgaos = self._gerar_orgaos()
             executor = concurrent.futures.ThreadPoolExecutor(max_workers=32)
             list(tqdm(executor.map(OrgaoExpedidor.baixar_mandados, orgaos), total=len(orgaos)))
-            self._mandados_list = [item for orgao in orgaos for item in orgao.obter_mandados()]
+            self._mandados_list = [item for orgao in orgaos for item in orgao.data]
         # print(f"Recuperados {len(self._mandados_list)}/{self._totalElements} mandados")
 
     def _baixar_orgaos(self, force: bool = False) -> dict:
@@ -288,7 +303,8 @@ class OrgaoExpedidor(Filtro):
         self._totalElements = self._init_info['totalElements']
         self._mandados_list = []
 
-    def baixar_mandados(self, force: bool = False) -> None:
+    def baixar_mandados(self,
+                        force: bool = False) -> None:  # TODO: Adicionar extend para quem não quer tanta informação
         if self._mandados_list and not force:
             warnings.warn(
                 (
